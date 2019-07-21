@@ -1,0 +1,154 @@
+// Copyright 2019-2020 Alberto & co. All Rights Reserved.
+
+
+#include "PSUnit.h"
+#include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
+#include "AbilitySystemComponent.h"
+#include "Net/UnrealNetwork.h"
+#include "Components/DecalComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Squads/PSSquad.h"
+
+// Sets default values
+APSUnit::APSUnit()
+{
+	// Set size for player capsule
+	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
+
+ 	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	PrimaryActorTick.bCanEverTick = true;
+	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	// Our ability system component.
+	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
+
+	CurrentAbility = nullptr;
+}
+
+// Called when the game starts or when spawned
+void APSUnit::BeginPlay()
+{
+	Super::BeginPlay();
+
+	if (GetOwner())
+	{
+		Squad = Cast<APSSquad>(GetOwner());
+	}
+
+	if (AbilitySystem)
+	{
+		AbilitySystem->InitAbilityActorInfo(this, this);
+
+		if (AttrDataTable && AttributeSetBlueprint)
+		{
+			AttributeSet = AbilitySystem->InitStats(AttributeSetBlueprint, AttrDataTable);
+		}
+	}
+}
+
+// Called every frame
+void APSUnit::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+}
+
+// Called to bind functionality to input
+void APSUnit::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
+{
+	Super::SetupPlayerInputComponent(PlayerInputComponent);
+
+}
+
+void APSUnit::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
+{
+	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
+
+	DOREPLIFETIME(APSUnit, Squad);
+	DOREPLIFETIME(APSUnit, CurrentAbilityParams);
+	DOREPLIFETIME(APSUnit, Team);
+	DOREPLIFETIME(APSUnit, PlayerOwner);
+	DOREPLIFETIME(APSUnit, CurrentAbility);
+	DOREPLIFETIME(APSUnit, ActionMoveToLocation);
+}
+
+void APSUnit::PossessedBy(AController* NewController)
+{
+	Super::PossessedBy(NewController);
+
+	AbilitySystem->RefreshAbilityActorInfo();
+}
+
+void APSUnit::UnitSelectedClient_Implementation()
+{
+	SetSelectionDecalVisibility(true);
+}
+
+void APSUnit::UnitDeselectedClient_Implementation()
+{
+	SetSelectionDecalVisibility(false);
+}
+
+void APSUnit::GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability)
+{
+	if (AbilitySystem)
+	{
+		if (HasAuthority() && Ability)
+		{
+			AbilitySystem->GiveAbility(FGameplayAbilitySpec(Ability.Get(), 1, 0));
+		}
+	}
+}
+
+void APSUnit::UseAbility(TSubclassOf<class UPSGameplayAbility> Ability, bool bIsUserInput)
+{
+	if (HasAuthority() && AbilitySystem && Ability)
+	{
+		if (bIsUserInput)
+		{
+			if (CurrentAbility)
+			{
+				UAIBlueprintHelperLibrary::SendAIMessage(this, "EndAbility", this, true);
+			}
+
+			CurrentAbility = Ability;
+		}
+		else
+		{
+			AbilitySystem->TryActivateAbilityByClass(Ability.Get());
+		}
+	}
+}
+
+void APSUnit::Die(APSUnit* Attacker)
+{
+	if (HasAuthority() && Attacker)
+	{
+		Destroy();
+	}
+}
+
+void APSUnit::TargetDied(APSUnit* Target)
+{
+	if (HasAuthority() && Target && Target == CurrentAbilityParams.Actor)
+	{
+		if (CurrentAbility)
+		{
+			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(CurrentAbility.GetDefaultObject());
+			AbilitySystem->CancelAbility(AbilityCDO);
+		}
+
+		CurrentAbility = nullptr;
+	}
+}
+
+void APSUnit::SetSelectionDecalVisibility(bool NewVisibility)
+{
+	TArray<UDecalComponent*> DecalComponents;
+	GetComponents<UDecalComponent>(DecalComponents);
+	for (UDecalComponent* Decal : DecalComponents)
+	{
+		Decal->SetVisibility(NewVisibility);
+	}
+}
