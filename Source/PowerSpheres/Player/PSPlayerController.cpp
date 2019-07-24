@@ -10,6 +10,8 @@
 #include "UI/PSHUD.h"
 #include "GameplayAbilitySpec.h"
 #include "AbilitySystemComponent.h"
+#include "EngineUtils.h"
+#include "MapFog.h"
 
 APSPlayerController::APSPlayerController()
 {
@@ -49,6 +51,13 @@ void APSPlayerController::BeginPlay()
 		FActorSpawnParameters SpawnParams;
 		SpawnParams.Owner = this;
 		Formation = World->SpawnActor<APSFormation>(FormationBlueprint, FVector::ZeroVector, FRotator::ZeroRotator, SpawnParams);
+
+		for (TActorIterator<AMapFog> ActorItr(World); ActorItr; ++ActorItr)
+		{
+			MapFog = *ActorItr;
+			// It should be only one AMapFog actor in the map, so as soon as we find the first one we break the for loop.
+			break;
+		}
 	}
 }
 
@@ -67,7 +76,8 @@ void APSPlayerController::OnActionReleased()
 
 		if (Hit.bBlockingHit)
 		{
-			if (APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor()))
+			APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
+			if (PSUnit && !PSUnit->CoveredByFog)
 			{
 				// Hit an unit.
 				FAbilityParams AbilityParams = FAbilityParams();

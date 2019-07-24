@@ -40,9 +40,6 @@ public:
 		return AttributeSet;
 	};
 
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = Abilities)
-	//TSubclassOf<class UGameplayAbility> Ability;
-
 	/** This function gets called only on the client who selected this unit. Is meant to deal with the UI and other client feedback. */
 	UFUNCTION(Client, Unreliable)
 	void UnitSelectedClient();
@@ -86,13 +83,33 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	TSubclassOf<class UPSGameplayAbility> CurrentAbility;
 
+	/** Indicates whether this unit is covered in fog for this client or not. */
+	UPROPERTY(BlueprintReadOnly)
+	bool CoveredByFog;
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
 	void SetSelectionDecalVisibility(bool NewVisibility);
 
+	// Called when this unit enter in the view of the local player in this machine (is revealed from fog of war).
+	UFUNCTION()
+	void OnUnitEnteredView(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
+
+	//  Called when this unit left the view of the local player in this machine (becomes hidden because it enters in the fog of war).
+	UFUNCTION()
+	void OnUnitLeftView(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
+
 private:
+
+	/** Component to reveal the FOW around this actor. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	class UMapRevealerComponent* MapRevealer;
+
+	/** Component to have an ico in the minimap representing this actor. Also to be hidden from FOW. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	class UMapIconComponent* MapIcon;
 
 	/** Our ability system */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))

@@ -69,6 +69,11 @@ protected:
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void UseSingleSquadAbility(APSSquad* Squad, EAbilityType AbilityType, FAbilityParams AbilityParams);
+
+private:
+
+	/** Actor representing the fog of war in the map. */
+	class AMapFog* MapFog;
 };
 
 

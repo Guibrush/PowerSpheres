@@ -11,6 +11,7 @@
 #include "HeadMountedDisplayFunctionLibrary.h"
 #include "Materials/Material.h"
 #include "Engine/World.h"
+#include "MapViewComponent.h"
 
 APSCharacter::APSCharacter()
 {
@@ -52,6 +53,9 @@ APSCharacter::APSCharacter()
 	//}
 	CursorToWorld->DecalSize = FVector(16.0f, 32.0f, 32.0f);
 	CursorToWorld->SetRelativeRotation(FRotator(90.0f, 0.0f, 0.0f).Quaternion());
+
+	MapView = CreateDefaultSubobject<UMapViewComponent>(TEXT("MapView"));
+	MapView->SetupAttachment(RootComponent);
 
 	// Activate ticking in order to update the cursor every frame.
 	PrimaryActorTick.bCanEverTick = true;

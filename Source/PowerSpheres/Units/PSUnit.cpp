@@ -8,7 +8,11 @@
 #include "Net/UnrealNetwork.h"
 #include "Components/DecalComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Kismet/GameplayStatics.h"
 #include "Squads/PSSquad.h"
+#include "Player/PSPlayerController.h"
+#include "MapRevealerComponent.h"
+#include "MapIconComponent.h"
 
 // Sets default values
 APSUnit::APSUnit()
@@ -19,6 +23,14 @@ APSUnit::APSUnit()
  	// Set this character to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
+
+	// Our map revealer component.
+	MapRevealer = CreateDefaultSubobject<UMapRevealerComponent>(TEXT("MapRevealer"));
+	MapRevealer->SetupAttachment(RootComponent);
+
+	// Our map icon component.
+	MapIcon = CreateDefaultSubobject<UMapIconComponent>(TEXT("MapIcon"));
+	MapIcon->SetupAttachment(RootComponent);
 
 	// Our ability system component.
 	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
@@ -44,6 +56,24 @@ void APSUnit::BeginPlay()
 		{
 			AttributeSet = AbilitySystem->InitStats(AttributeSetBlueprint, AttrDataTable);
 		}
+	}
+
+	UWorld* const World = GetWorld();
+	if (World && MapRevealer)
+	{
+		if (APSPlayerController* PSController = Cast<APSPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
+		{
+			if (PSController->Team != Team)
+			{
+				MapRevealer->DestroyComponent();
+			}
+		}
+	}
+
+	if (MapIcon)
+	{
+		MapIcon->OnIconEnteredView.AddDynamic(this, &APSUnit::OnUnitEnteredView);
+		MapIcon->OnIconLeftView.AddDynamic(this, &APSUnit::OnUnitLeftView);
 	}
 }
 
@@ -151,4 +181,14 @@ void APSUnit::SetSelectionDecalVisibility(bool NewVisibility)
 	{
 		Decal->SetVisibility(NewVisibility);
 	}
+}
+
+void APSUnit::OnUnitEnteredView(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
+{
+	CoveredByFog = false;
+}
+
+void APSUnit::OnUnitLeftView(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
+{
+	CoveredByFog = true;
 }

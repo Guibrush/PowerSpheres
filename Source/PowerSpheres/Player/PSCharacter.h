@@ -77,6 +77,10 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Camera, meta = (AllowPrivateAccess = "true"))
 	class UDecalComponent* CursorToWorld;
 
+	/** Component to show the area around the player camera on the minimap. */
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Minimap, meta = (AllowPrivateAccess = "true"))
+	class UMapViewComponent* MapView;
+
 	/** Internal vector to accumulate the movement input of the player. */
 	FVector MovementInputVector;
 
