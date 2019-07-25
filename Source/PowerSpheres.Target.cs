@@ -8,6 +8,7 @@ public class PowerSpheresTarget : TargetRules
 	public PowerSpheresTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Game;
-		ExtraModuleNames.Add("PowerSpheres");
+        bUsesSteam = true;
+        ExtraModuleNames.Add("PowerSpheres");
 	}
 }
