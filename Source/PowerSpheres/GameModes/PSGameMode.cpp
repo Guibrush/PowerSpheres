@@ -26,7 +26,35 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 
 FString APSGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal)
 {
-	APSPlayerController* PSController = Cast<APSPlayerController>(NewPlayerController);
+	AssignPlayerTeam(NewPlayerController, Options);
+
+	return Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
+}
+
+void APSGameMode::InitSeamlessTravelPlayer(AController* NewController)
+{
+	AssignPlayerTeam(NewController, "");
+
+	Super::InitSeamlessTravelPlayer(NewController);
+}
+
+void APSGameMode::PostLogin(APlayerController* NewPlayer)
+{
+	Super::PostLogin(NewPlayer);
+
+	SpawnPlayerArmy(NewPlayer);
+}
+
+void APSGameMode::HandleSeamlessTravelPlayer(AController*& C)
+{
+	Super::HandleSeamlessTravelPlayer(C);
+
+	SpawnPlayerArmy(C);
+}
+
+void APSGameMode::AssignPlayerTeam(AController* Controller, const FString& Options)
+{
+	APSPlayerController* PSController = Cast<APSPlayerController>(Controller);
 	if (PSController)
 	{
 		ETeamType Team = (ETeamType)UGameplayStatics::GetIntOption(Options, TEXT("Team"), 0);
@@ -48,16 +76,12 @@ FString APSGameMode::InitNewPlayer(APlayerController* NewPlayerController, const
 		}
 #endif
 	}
-
-	return Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
 }
 
-void APSGameMode::PostLogin(APlayerController* NewPlayer)
+void APSGameMode::SpawnPlayerArmy(AController* Controller)
 {
-	Super::PostLogin(NewPlayer);
-
 	UWorld* const World = GetWorld();
-	APSPlayerController* PSPlayerController = Cast<APSPlayerController>(NewPlayer);
+	APSPlayerController* PSPlayerController = Cast<APSPlayerController>(Controller);
 	if (World && PSPlayerController)
 	{
 		FVector StartLocation = PSPlayerController->StartSpot->GetActorLocation();

@@ -36,11 +36,16 @@ public:
 	//~ Begin AGameModeBase Interface
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
 	virtual FString InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal = TEXT("")) override;
+	virtual void InitSeamlessTravelPlayer(AController* NewController) override;
 	virtual void PostLogin(APlayerController* NewPlayer) override;
+	virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	//~ End AGameModeBase Interface
 
 private:
 #if WITH_EDITOR
 	ETeamType CurrentTeam;
 #endif
+
+	void AssignPlayerTeam(AController* Controller, const FString& Options);
+	void SpawnPlayerArmy(AController* Controller);
 };
