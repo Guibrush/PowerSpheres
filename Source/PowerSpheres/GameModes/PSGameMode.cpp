@@ -4,6 +4,7 @@
 #include "Player/PSCharacter.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
+#include "Player/PSPlayerState.h"
 
 APSGameMode::APSGameMode()
 {
@@ -26,42 +27,48 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 
 FString APSGameMode::InitNewPlayer(APlayerController* NewPlayerController, const FUniqueNetIdRepl& UniqueId, const FString& Options, const FString& Portal)
 {
-	AssignPlayerTeam(NewPlayerController, Options);
+	AssignPlayerTeam(NewPlayerController);
 
 	return Super::InitNewPlayer(NewPlayerController, UniqueId, Options, Portal);
 }
 
 void APSGameMode::InitSeamlessTravelPlayer(AController* NewController)
 {
-	AssignPlayerTeam(NewController, "");
+	AssignPlayerTeam(NewController);
 
 	Super::InitSeamlessTravelPlayer(NewController);
 }
 
-void APSGameMode::PostLogin(APlayerController* NewPlayer)
+//void APSGameMode::PostLogin(APlayerController* NewPlayer)
+//{
+//	Super::PostLogin(NewPlayer);
+//
+//	SpawnPlayerArmy(NewPlayer);
+//}
+//
+//void APSGameMode::HandleSeamlessTravelPlayer(AController*& C)
+//{
+//	Super::HandleSeamlessTravelPlayer(C);
+//
+//	SpawnPlayerArmy(C);
+//}
+
+void APSGameMode::RestartPlayer(AController* NewPlayer)
 {
-	Super::PostLogin(NewPlayer);
+	Super::RestartPlayer(NewPlayer);
 
 	SpawnPlayerArmy(NewPlayer);
 }
 
-void APSGameMode::HandleSeamlessTravelPlayer(AController*& C)
+void APSGameMode::AssignPlayerTeam(AController* Controller)
 {
-	Super::HandleSeamlessTravelPlayer(C);
-
-	SpawnPlayerArmy(C);
-}
-
-void APSGameMode::AssignPlayerTeam(AController* Controller, const FString& Options)
-{
-	APSPlayerController* PSController = Cast<APSPlayerController>(Controller);
-	if (PSController)
+	if (APSPlayerController * PSController = Cast<APSPlayerController>(Controller))
 	{
-		ETeamType Team = (ETeamType)UGameplayStatics::GetIntOption(Options, TEXT("Team"), 0);
-		if (Team > ETeamType::NoTeam)
+		APSPlayerState* PlayerState = Cast<APSPlayerState>(Controller->PlayerState);
+		if (PlayerState && PlayerState->Team > ETeamType::NoTeam)
 		{
-			PSController->Team = Team;
-			Teams[Team].Team.Add(PSController);
+			PSController->Team = PlayerState->Team;
+			Teams[PlayerState->Team].Team.Add(PSController);
 		}
 #if WITH_EDITOR
 		else

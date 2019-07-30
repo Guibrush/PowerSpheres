@@ -3,6 +3,8 @@
 
 #include "PSGameModeLobby.h"
 #include "Engine/World.h"
+#include "Player/PSPlayerState.h"
+#include "PSTypes.h"
 
 bool APSGameModeLobby::StartGame(const FString& MapName, const FString& Options, bool bSeamless)
 {
@@ -15,4 +17,14 @@ bool APSGameModeLobby::StartGame(const FString& MapName, const FString& Options,
 	}
 
 	return false;
+}
+
+void APSGameModeLobby::GenericPlayerInitialization(AController* C)
+{
+	Super::GenericPlayerInitialization(C);
+
+	if (APSPlayerState* PlayerState = Cast<APSPlayerState>(C->PlayerState))
+	{
+		PlayerState->Team = ETeamType::Team1;
+	}
 }

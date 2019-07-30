@@ -23,5 +23,9 @@ public:
 	/** Starts a game in the specified map with all the clients connected at the moment of the call. */
 	UFUNCTION(BlueprintCallable, Category = PSGame)
 	bool StartGame(const FString& MapName, const FString& Options, bool bSeamless);
+
+	//~ Begin AGameModeBase Interface
+	virtual void GenericPlayerInitialization(AController* C) override;
+	//~ End AGameModeBase Interface
 	
 };
