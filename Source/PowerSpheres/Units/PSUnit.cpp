@@ -13,6 +13,7 @@
 #include "Player/PSPlayerController.h"
 #include "MapRevealerComponent.h"
 #include "MapIconComponent.h"
+#include "Engine/World.h"
 
 // Sets default values
 APSUnit::APSUnit()
@@ -58,22 +59,35 @@ void APSUnit::BeginPlay()
 		}
 	}
 
-	UWorld* const World = GetWorld();
-	if (World && MapRevealer)
+	if (MapIcon)
 	{
-		if (APSPlayerController* PSController = Cast<APSPlayerController>(UGameplayStatics::GetPlayerController(World, 0)))
+		MapIcon->OnIconEnteredView.AddDynamic(this, &APSUnit::OnUnitLeftFOW);
+		MapIcon->OnIconLeftView.AddDynamic(this, &APSUnit::OnUnitEnteredFOW);
+	}
+
+	CheckInitMapComponents();
+}
+
+void APSUnit::CheckInitMapComponents()
+{
+	UWorld* const World = GetWorld();
+	if (World)
+	{
+		APSPlayerController* PSController = Cast<APSPlayerController>(UGameplayStatics::GetPlayerController(World, 0));
+		if (PSController)
 		{
-			if (PSController->Team != Team)
+			if (MapRevealer && PSController->Team != Team)
 			{
 				MapRevealer->DestroyComponent();
 			}
-		}
-	}
 
-	if (MapIcon)
-	{
-		MapIcon->OnIconEnteredView.AddDynamic(this, &APSUnit::OnUnitEnteredView);
-		MapIcon->OnIconLeftView.AddDynamic(this, &APSUnit::OnUnitLeftView);
+			InitMapComponents();
+		}
+		else
+		{
+			// Little hack to fix a unknown bug about not getting the proper PSPlayerController on BeginPlay.
+			World->GetTimerManager().SetTimerForNextTick(this, &APSUnit::CheckInitMapComponents);
+		}
 	}
 }
 
@@ -183,12 +197,16 @@ void APSUnit::SetSelectionDecalVisibility(bool NewVisibility)
 	}
 }
 
-void APSUnit::OnUnitEnteredView(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
+void APSUnit::OnUnitLeftFOW(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
 {
-	CoveredByFog = false;
+	CoveredByFOW = false;
+
+	UnitLeftFOW();
 }
 
-void APSUnit::OnUnitLeftView(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
+void APSUnit::OnUnitEnteredFOW(UMapIconComponent* MapIconComp, UMapViewComponent* MapViewComp)
 {
-	CoveredByFog = true;
+	CoveredByFOW = true;
+
+	UnitEnteredFOW();
 }
