@@ -8,6 +8,7 @@ public class PowerSpheresEditorTarget : TargetRules
 	public PowerSpheresEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		ExtraModuleNames.Add("PowerSpheres");
+        bUsesSteam = true;
+        ExtraModuleNames.Add("PowerSpheres");
 	}
 }

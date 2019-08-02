@@ -45,6 +45,8 @@ void APSPlayerController::SetupInputComponent()
 
 void APSPlayerController::BeginPlay()
 {
+	Super::BeginPlay();
+
 	UWorld* const World = GetWorld();
 	if (World)
 	{
@@ -77,7 +79,7 @@ void APSPlayerController::OnActionReleased()
 		if (Hit.bBlockingHit)
 		{
 			APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
-			if (PSUnit && !PSUnit->CoveredByFog)
+			if (PSUnit && !PSUnit->CoveredByFOW)
 			{
 				// Hit an unit.
 				FAbilityParams AbilityParams = FAbilityParams();

@@ -59,6 +59,17 @@ public:
 	UFUNCTION()
 	void TargetDied(APSUnit* Target);
 
+	// TODO: This is part of the nasty hack that we are doing on the Tick. When the hack is fixed we need to reevaluate if we need this
+	// function at all.
+	UFUNCTION(BlueprintImplementableEvent)
+	void InitMapComponents();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnitLeftFOW();
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnitEnteredFOW();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	UDataTable* AttrDataTable;
 
@@ -85,7 +96,7 @@ public:
 
 	/** Indicates whether this unit is covered in fog for this client or not. */
 	UPROPERTY(BlueprintReadOnly)
-	bool CoveredByFog;
+	bool CoveredByFOW;
 
 protected:
 	// Called when the game starts or when spawned
@@ -93,13 +104,13 @@ protected:
 
 	void SetSelectionDecalVisibility(bool NewVisibility);
 
-	// Called when this unit enter in the view of the local player in this machine (is revealed from fog of war).
+	// Called when this unit is revealed from fog of war.
 	UFUNCTION()
-	void OnUnitEnteredView(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
+	void OnUnitLeftFOW(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
 
-	//  Called when this unit left the view of the local player in this machine (becomes hidden because it enters in the fog of war).
+	//  Called when this unit becomes hidden because it enters in the fog of war.
 	UFUNCTION()
-	void OnUnitLeftView(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
+	void OnUnitEnteredFOW(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
 
 private:
 
@@ -118,5 +129,9 @@ private:
 	/** Our attribute set */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
 	const class UAttributeSet* AttributeSet;
+
+	// Helper function to check when the game starts the initialization of the map components.
+	// It calls itself every tick if the PSPlayerController is not valid until is valid.
+	void CheckInitMapComponents();
 
 };

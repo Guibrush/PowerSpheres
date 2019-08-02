@@ -10,8 +10,12 @@ public class PowerSpheres : ModuleRules
 
         PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine", "InputCore", "HeadMountedDisplay", "NavigationSystem", "AIModule", "GameplayAbilities", "GameplayTasks", "UMG" });
 
+        PublicDependencyModuleNames.AddRange(new string[] { "OnlineSubsystem", "OnlineSubsystemUtils" });
+
+        PublicDependencyModuleNames.AddRange(new string[] { "MinimapPlugin" });
+
         PrivateDependencyModuleNames.AddRange(new string[] { "Slate", "SlateCore" });
 
-        PrivateDependencyModuleNames.AddRange(new string[] { "MinimapPlugin" });
+        DynamicallyLoadedModuleNames.Add("OnlineSubsystemSteam");
     }
 }
