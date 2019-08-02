@@ -5,7 +5,7 @@ description: Where we compile all the useful links
 # Documentation
 
 * Gameplay Ability System
-  * [https://answers.unrealengine.com/questions/671761/any-way-to-dynamically-select-a-behavior-subtree.html](https://answers.unrealengine.com/questions/671761/any-way-to-dynamically-select-a-behavior-subtree.html)
+  * [https://wiki.unrealengine.com/GameplayAbilities\_and\_You](https://wiki.unrealengine.com/GameplayAbilities_and_You)
 * AI
   * [https://answers.unrealengine.com/questions/671761/any-way-to-dynamically-select-a-behavior-subtree.html](https://answers.unrealengine.com/questions/671761/any-way-to-dynamically-select-a-behavior-subtree.html)
 * Online
