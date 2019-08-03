@@ -12,11 +12,46 @@ void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
 
 	DOREPLIFETIME(UPSUnitAttributeSet, Health);
+	DOREPLIFETIME(UPSUnitAttributeSet, MaxHealth);
+	DOREPLIFETIME(UPSUnitAttributeSet, Movement);
+	DOREPLIFETIME(UPSUnitAttributeSet, Attack);
+	DOREPLIFETIME(UPSUnitAttributeSet, Defence);
+	DOREPLIFETIME(UPSUnitAttributeSet, ElementalDefence);
 }
 
 FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute()
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Health));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetMaxHealthAttribute()
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, MaxHealth));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetMovementAttribute()
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Movement));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetAttackAttribute()
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Attack));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetDefenceAttribute()
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Defence));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetElementalDefenceAttribute()
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, ElementalDefence));
 	return FGameplayAttribute(Property);
 }
 
@@ -41,7 +76,7 @@ void UPSUnitAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		}
 
 		// Clamp health
-		float FinalHealth = FMath::Clamp(Health.GetCurrentValue(), 0.0f, MaxHealth);
+		float FinalHealth = FMath::Clamp(Health.GetBaseValue(), 0.0f, MaxHealth.GetBaseValue());
 		Health.SetBaseValue(FinalHealth);
 		Health.SetCurrentValue(FinalHealth);
 		if (FinalHealth <= 0)
