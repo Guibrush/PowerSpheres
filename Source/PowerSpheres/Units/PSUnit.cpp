@@ -59,6 +59,13 @@ void APSUnit::BeginPlay()
 		}
 	}
 
+	if (const UPSUnitAttributeSet* PSAttributeSet = Cast<UPSUnitAttributeSet>(AttributeSet))
+	{
+		float MovementSpeed = PSAttributeSet->GetMovementAttribute().GetNumericValue(AttributeSet);
+		GetCharacterMovement()->MaxWalkSpeed *= MovementSpeed;
+		GetCharacterMovement()->MaxAcceleration *= MovementSpeed;
+	}
+
 	if (MapIcon)
 	{
 		MapIcon->OnIconEnteredView.AddDynamic(this, &APSUnit::OnUnitLeftFOW);

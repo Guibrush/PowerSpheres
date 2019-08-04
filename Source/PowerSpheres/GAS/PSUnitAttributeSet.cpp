@@ -6,6 +6,7 @@
 #include "AbilitySystemComponent.h"
 #include "Units/PSUnit.h"
 #include "GameplayEffectExtension.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -19,37 +20,37 @@ void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UPSUnitAttributeSet, ElementalDefence);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Health));
 	return FGameplayAttribute(Property);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetMaxHealthAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetMaxHealthAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, MaxHealth));
 	return FGameplayAttribute(Property);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetMovementAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetMovementAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Movement));
 	return FGameplayAttribute(Property);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetAttackAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetAttackAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Attack));
 	return FGameplayAttribute(Property);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetDefenceAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetDefenceAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Defence));
 	return FGameplayAttribute(Property);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetElementalDefenceAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetElementalDefenceAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, ElementalDefence));
 	return FGameplayAttribute(Property);
@@ -98,6 +99,21 @@ void UPSUnitAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 				DamagedUnit->Die(AttackingUnit);
 				AttackingUnit->TargetDied(DamagedUnit);
 			}
+		}
+	}
+	else if (GetMovementAttribute() == Data.EvaluatedData.Attribute)
+	{
+		AActor* DamagedActor = nullptr;
+		if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
+		{
+			DamagedActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
+		}
+
+		if (APSUnit* DamagedUnit = Cast<APSUnit>(DamagedActor))
+		{
+			float MovementSpeed = Movement.GetCurrentValue();
+			DamagedUnit->GetCharacterMovement()->MaxWalkSpeed *= MovementSpeed;
+			DamagedUnit->GetCharacterMovement()->MaxAcceleration *= MovementSpeed;
 		}
 	}
 }

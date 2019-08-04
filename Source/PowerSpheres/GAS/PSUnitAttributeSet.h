@@ -25,7 +25,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetHealthAttribute();
+	FGameplayAttribute GetHealthAttribute() const;
 
 	/** This needs to be an attribute due to how the attributes work on GAS. */
 	UPROPERTY(BlueprintReadOnly, Replicated)
@@ -33,7 +33,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetMaxHealthAttribute();
+	FGameplayAttribute GetMaxHealthAttribute() const;
 
 	/** Movement speed of this unit. */
 	UPROPERTY(BlueprintReadOnly, Replicated)
@@ -41,7 +41,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetMovementAttribute();
+	FGameplayAttribute GetMovementAttribute() const;
 
 	/** Attack value of this unit. It will be used to deal damage. */
 	UPROPERTY(BlueprintReadOnly, Replicated)
@@ -49,7 +49,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetAttackAttribute();
+	FGameplayAttribute GetAttackAttribute() const;
 
 	/** Physical defence of this unit. It will be compared with Attack. */
 	UPROPERTY(BlueprintReadOnly, Replicated)
@@ -57,7 +57,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetDefenceAttribute();
+	FGameplayAttribute GetDefenceAttribute() const;
 
 	/** Defence against elemental effects. */
 	UPROPERTY(BlueprintReadOnly, Replicated)
@@ -65,7 +65,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetElementalDefenceAttribute();
+	FGameplayAttribute GetElementalDefenceAttribute() const;
 
 	// Begin AttributeSet interface
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
