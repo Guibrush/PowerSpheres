@@ -3,13 +3,12 @@
 
 #include "PSDamageExecCalc.h"
 #include "AbilitySystemComponent.h"
-#include "PSUnitAttributeSet.h"
 #include "Units/PSUnit.h"
 
 UPSDamageExecCalc::UPSDamageExecCalc(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)
 {
-	FAttrCaptureDef Attributes;
+	FAttrDamageCaptureDef Attributes;
 
 	//RelevantAttributesToCapture is the array that contains all attributes you wish to capture, without exceptions.
 	RelevantAttributesToCapture.Add(Attributes.HealthDef);
@@ -42,9 +41,9 @@ void UPSDamageExecCalc::Execute_Implementation(const FGameplayEffectCustomExecut
 	EvaluationParameters.TargetTags = TargetTags;
 
 	//Creating the attribute struct, we will need its values later when we want to get the attribute values.
-	FAttrCaptureDef Attributes;
-	float Health = 0.f;
-	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(Attributes.HealthDef, EvaluationParameters, Health);
+	FAttrDamageCaptureDef Attributes;
+	//float Health = 0.f;
+	//ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(Attributes.HealthDef, EvaluationParameters, Health);
 	float Attack = 0.f;
 	ExecutionParams.AttemptCalculateCapturedAttributeMagnitude(Attributes.AttackDef, EvaluationParameters, Attack);
 	float Defence = 0.f;

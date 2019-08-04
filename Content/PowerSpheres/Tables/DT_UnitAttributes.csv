@@ -3,5 +3,5 @@ PSUnitAttributeSet.Health,100,0,100,,FALSE
 PSUnitAttributeSet.MaxHealth,100,0,100,,FALSE
 PSUnitAttributeSet.Movement,10,0,10,,FALSE
 PSUnitAttributeSet.Attack,50,0,50,,FALSE
-PSUnitAttributeSet.Defence,25,0,25,,FALSE
-PSUnitAttributeSet.ElementalDefence,5,0,5,,FALSE
+PSUnitAttributeSet.Defence,45,0,45,,FALSE
+PSUnitAttributeSet.ElementalDefence,50,0,50,,FALSE

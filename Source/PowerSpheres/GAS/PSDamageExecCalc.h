@@ -8,7 +8,7 @@
 #include "PSDamageExecCalc.generated.h"
 
 USTRUCT()
-struct POWERSPHERES_API FAttrCaptureDef
+struct POWERSPHERES_API FAttrDamageCaptureDef
 {
 	GENERATED_USTRUCT_BODY()
 
@@ -18,7 +18,7 @@ struct POWERSPHERES_API FAttrCaptureDef
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Attack);
 	DECLARE_ATTRIBUTE_CAPTUREDEF(Defence);
 
-	FAttrCaptureDef()
+	FAttrDamageCaptureDef()
 	{
 		// We define the values of the variables we declared now. In this example, HealthProperty will point to the Health attribute in the 
 		// UMyAttributeSet on the receiving target of this execution. The last parameter is a bool, and determines if we snapshot the 
@@ -42,6 +42,6 @@ class POWERSPHERES_API UPSDamageExecCalc : public UGameplayEffectExecutionCalcul
 
 public:
 
-	void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const;
+	void Execute_Implementation(const FGameplayEffectCustomExecutionParameters& ExecutionParams, OUT FGameplayEffectCustomExecutionOutput& OutExecutionOutput) const override;
 	
 };
