@@ -177,17 +177,6 @@ void APSUnit::Die(APSUnit* Attacker)
 
 void APSUnit::TargetDied(APSUnit* Target)
 {
-	//if (HasAuthority() && Target && Target == CurrentAbilityParams.Actor)
-	//{
-	//	if (CurrentAbility)
-	//	{
-	//		UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(CurrentAbility.GetDefaultObject());
-	//		AbilitySystem->CancelAbility(AbilityCDO);
-	//	}
-
-	//	CurrentAbility = nullptr;
-	//}
-
 	if (HasAuthority() && Target)
 	{
 		APSUnit* TargetUnit = Cast<APSUnit>(Target);
