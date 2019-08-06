@@ -28,6 +28,7 @@ public:
 	/** Marks the properties we wish to replicate */
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
+	UFUNCTION()
 	void MoveSquad(const FVector DestLocation, const FRotator DestRotation, bool bIsUserInput);
 
 	/** This function gets called only on the client who selected this squad. Is meant to deal with the UI and other client feedback. */
@@ -38,7 +39,19 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void SquadDeselectedClient();
 
+	UFUNCTION()
 	void UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityParams, bool bIsUserInput);
+
+	/** Whether all the units of this squad had been killed or not. */
+	UFUNCTION(BlueprintCallable)
+	bool SquadDestroyed();
+
+	// Called when one of the units from this squad dies.
+	UFUNCTION()
+	void UnitDied(APSUnit* Unit);
+
+	UFUNCTION()
+	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> CommonAbilities;
@@ -52,8 +65,12 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	TArray<class APSUnit*> Units;
 
+	UPROPERTY(BlueprintReadWrite, Replicated)
+	FAbilityParams CurrentAbilityParams;
+
 protected:
-	// Called when the game starts or when spawned
+
+	// Called when the game starts or when spawned.
 	virtual void BeginPlay() override;
 
 };

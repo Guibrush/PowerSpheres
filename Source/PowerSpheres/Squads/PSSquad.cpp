@@ -161,48 +161,76 @@ void APSSquad::UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityP
 		}
 		else
 		{
-			APSSquad* EnemySquad = Cast<APSSquad>(AbilityParams.Actor);
-			TArray<APSUnit*> EnemyUnits;
-			if (EnemySquad)
-			{
-				EnemyUnits = EnemySquad->Units;
-			}
-			TArray<APSUnit*> OccupiedEnemyUnits = TArray<APSUnit*>();
-
 			for (APSUnit* Unit : Units)
 			{
-				if (Unit)
-				{
-					FAbilityParams UnitAbilityParams = FAbilityParams(AbilityParams);
-					if (EnemySquad)
-					{
-						EnemyUnits.Sort([Unit](const APSUnit& UnitA, const APSUnit& UnitB)
-							{
-								float DistanceA = FVector::DistSquared(UnitA.GetActorLocation(), Unit->GetActorLocation());
-								float DistanceB = FVector::DistSquared(UnitB.GetActorLocation(), Unit->GetActorLocation());
-								return DistanceA > DistanceB;
-							});
-
-						int i = 0;
-						while (i < EnemyUnits.Num() && OccupiedEnemyUnits.Contains(EnemyUnits[i]))
-						{
-							i++;
-						}
-
-						if (i >= EnemyUnits.Num())
-						{
-							i = 0;
-							OccupiedEnemyUnits.Empty();
-						}
-
-						UnitAbilityParams.Actor = EnemyUnits[i];
-						OccupiedEnemyUnits.Add(EnemyUnits[i]);
-					}
-
-					Unit->CurrentAbilityParams = UnitAbilityParams;
-					Unit->UseAbility(CommonAbilities[AbilityType], bIsUserInput);
-				}
+				CurrentAbilityParams = AbilityParams;
+				Unit->CurrentAbilityParams = AbilityParams;
+				Unit->UseAbility(CommonAbilities[AbilityType], bIsUserInput);
 			}
+
+			//APSSquad* EnemySquad = Cast<APSSquad>(AbilityParams.Actor);
+			//TArray<APSUnit*> EnemyUnits;
+			//if (EnemySquad)
+			//{
+			//	EnemyUnits = EnemySquad->Units;
+			//}
+			//TArray<APSUnit*> OccupiedEnemyUnits = TArray<APSUnit*>();
+
+			//for (APSUnit* Unit : Units)
+			//{
+			//	if (Unit)
+			//	{
+			//		FAbilityParams UnitAbilityParams = FAbilityParams(AbilityParams);
+			//		if (EnemySquad)
+			//		{
+			//			EnemyUnits.Sort([Unit](const APSUnit& UnitA, const APSUnit& UnitB)
+			//				{
+			//					float DistanceA = FVector::DistSquared(UnitA.GetActorLocation(), Unit->GetActorLocation());
+			//					float DistanceB = FVector::DistSquared(UnitB.GetActorLocation(), Unit->GetActorLocation());
+			//					return DistanceA > DistanceB;
+			//				});
+
+			//			int i = 0;
+			//			while (i < EnemyUnits.Num() && OccupiedEnemyUnits.Contains(EnemyUnits[i]))
+			//			{
+			//				i++;
+			//			}
+
+			//			if (i >= EnemyUnits.Num())
+			//			{
+			//				i = 0;
+			//				OccupiedEnemyUnits.Empty();
+			//			}
+
+			//			UnitAbilityParams.Actor = EnemyUnits[i];
+			//			OccupiedEnemyUnits.Add(EnemyUnits[i]);
+			//		}
+
+			//		Unit->CurrentAbilityParams = UnitAbilityParams;
+			//		Unit->UseAbility(CommonAbilities[AbilityType], bIsUserInput);
+			//	}
+			//}
+		}
+	}
+}
+
+bool APSSquad::SquadDestroyed()
+{
+	return Units.Num() <= 0;
+}
+
+void APSSquad::UnitDied(APSUnit* Unit)
+{
+	Units.Remove(Unit);
+}
+
+void APSSquad::TargetSquadDestroyed(APSSquad* TargetSquad)
+{
+	if (HasAuthority() && TargetSquad && TargetSquad == CurrentAbilityParams.Actor)
+	{
+		for (APSUnit* Unit : Units)
+		{
+			Unit->TargetSquadDestroyed(TargetSquad);
 		}
 	}
 }

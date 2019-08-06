@@ -25,7 +25,7 @@ public:
 
 	/** Gets the actual attribute to allow further calculation with it. */
 	UFUNCTION(BlueprintCallable)
-	FGameplayAttribute GetHealthAttribute();
+	FGameplayAttribute GetHealthAttribute() const;
 
 	/** This needs to be an attribute due to how the attributes work on GAS. */
 	UPROPERTY(BlueprintReadOnly, Replicated)

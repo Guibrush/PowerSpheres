@@ -19,7 +19,7 @@ void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UPSUnitAttributeSet, ElementalDefence);
 }
 
-FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute()
+FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, Health));
 	return FGameplayAttribute(Property);

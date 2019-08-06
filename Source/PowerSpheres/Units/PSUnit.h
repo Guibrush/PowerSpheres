@@ -59,6 +59,9 @@ public:
 	UFUNCTION()
 	void TargetDied(APSUnit* Target);
 
+	UFUNCTION()
+	void TargetSquadDestroyed(APSSquad* TargetSquad);
+
 	// TODO: This is part of the nasty hack that we are doing on the Tick. When the hack is fixed we need to reevaluate if we need this
 	// function at all.
 	UFUNCTION(BlueprintImplementableEvent)
@@ -69,6 +72,9 @@ public:
 
 	UFUNCTION(BlueprintImplementableEvent)
 	void UnitEnteredFOW();
+
+	UFUNCTION(BlueprintCallable)
+	bool IsAlive();
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	UDataTable* AttrDataTable;
@@ -85,7 +91,7 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	class APSPlayerController* PlayerOwner;
 
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
