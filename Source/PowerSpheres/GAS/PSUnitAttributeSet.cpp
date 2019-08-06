@@ -7,6 +7,7 @@
 #include "Units/PSUnit.h"
 #include "GameplayEffectExtension.h"
 #include "GameFramework/CharacterMovementComponent.h"
+#include "MapRevealerComponent.h"
 
 void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
@@ -53,6 +54,12 @@ FGameplayAttribute UPSUnitAttributeSet::GetDefenceAttribute() const
 FGameplayAttribute UPSUnitAttributeSet::GetElementalDefenceAttribute() const
 {
 	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, ElementalDefence));
+	return FGameplayAttribute(Property);
+}
+
+FGameplayAttribute UPSUnitAttributeSet::GetVisionRadiusAttribute() const
+{
+	static UProperty* Property = FindFieldChecked<UProperty>(UPSUnitAttributeSet::StaticClass(), GET_MEMBER_NAME_CHECKED(UPSUnitAttributeSet, VisionRadius));
 	return FGameplayAttribute(Property);
 }
 
@@ -114,6 +121,20 @@ void UPSUnitAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 			float MovementSpeed = Movement.GetCurrentValue();
 			DamagedUnit->GetCharacterMovement()->MaxWalkSpeed *= MovementSpeed;
 			DamagedUnit->GetCharacterMovement()->MaxAcceleration *= MovementSpeed;
+		}
+	}
+	else if (GetVisionRadiusAttribute() == Data.EvaluatedData.Attribute)
+	{
+		AActor* DamagedActor = nullptr;
+		if (Data.Target.AbilityActorInfo.IsValid() && Data.Target.AbilityActorInfo->AvatarActor.IsValid())
+		{
+			DamagedActor = Data.Target.AbilityActorInfo->AvatarActor.Get();
+		}
+
+		if (APSUnit * DamagedUnit = Cast<APSUnit>(DamagedActor))
+		{
+			float NewVisionRadius = VisionRadius.GetCurrentValue();
+			DamagedUnit->GetMapRevealer()->SetBoxExtent(FVector(NewVisionRadius, NewVisionRadius, 0.0f));
 		}
 	}
 }

@@ -64,6 +64,9 @@ void APSUnit::BeginPlay()
 		float MovementSpeed = PSAttributeSet->GetMovementAttribute().GetNumericValue(AttributeSet);
 		GetCharacterMovement()->MaxWalkSpeed *= MovementSpeed;
 		GetCharacterMovement()->MaxAcceleration *= MovementSpeed;
+
+		float VisionRadius = PSAttributeSet->GetVisionRadiusAttribute().GetNumericValue(AttributeSet);
+		MapRevealer->SetBoxExtent(FVector(VisionRadius, VisionRadius, 0.0f));
 	}
 
 	if (MapIcon)

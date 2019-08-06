@@ -67,6 +67,14 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FGameplayAttribute GetElementalDefenceAttribute() const;
 
+	/** How far this unit can reveal the FOW around it. */
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	FGameplayAttributeData VisionRadius;
+
+	/** Gets the actual attribute to allow further calculation with it. */
+	UFUNCTION(BlueprintCallable)
+	FGameplayAttribute GetVisionRadiusAttribute() const;
+
 	// Begin AttributeSet interface
 	virtual void PostGameplayEffectExecute(const struct FGameplayEffectModCallbackData& Data) override;
 	// End AttributeSet interface

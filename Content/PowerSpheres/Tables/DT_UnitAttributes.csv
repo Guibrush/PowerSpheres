@@ -5,3 +5,4 @@ PSUnitAttributeSet.Movement,2,0,2,,FALSE
 PSUnitAttributeSet.Attack,50,0,50,,FALSE
 PSUnitAttributeSet.Defence,45,0,45,,FALSE
 PSUnitAttributeSet.ElementalDefence,50,0,50,,FALSE
+PSUnitAttributeSet.VisionRadius,1000,0,1000,,FALSE

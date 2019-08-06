@@ -40,6 +40,11 @@ public:
 		return AttributeSet;
 	};
 
+	class UMapRevealerComponent* GetMapRevealer() const
+	{
+		return MapRevealer;
+	};
+
 	/** This function gets called only on the client who selected this unit. Is meant to deal with the UI and other client feedback. */
 	UFUNCTION(Client, Unreliable)
 	void UnitSelectedClient();
