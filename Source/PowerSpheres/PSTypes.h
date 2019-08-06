@@ -45,6 +45,7 @@ struct POWERSPHERES_API FAbilityParams
 		, Direction(FVector::ZeroVector)
 		, Rotation(FRotator::ZeroRotator)
 		, Actor(nullptr)
+		, AISelectedTarget(nullptr)
 	{ }
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -58,4 +59,7 @@ struct POWERSPHERES_API FAbilityParams
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* Actor;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	AActor* AISelectedTarget;
 };

@@ -174,15 +174,40 @@ void APSUnit::UseAbility(TSubclassOf<class UPSGameplayAbility> Ability, bool bIs
 
 void APSUnit::Die(APSUnit* Attacker)
 {
-	if (HasAuthority() && Attacker)
+	if (HasAuthority() && Squad && Attacker)
 	{
+		Squad->UnitDied(this);
+
 		Destroy();
 	}
 }
 
 void APSUnit::TargetDied(APSUnit* Target)
 {
-	if (HasAuthority() && Target && Target == CurrentAbilityParams.Actor)
+	if (HasAuthority() && Target)
+	{
+		APSUnit* TargetUnit = Cast<APSUnit>(Target);
+		if (TargetUnit && TargetUnit->Squad == CurrentAbilityParams.Actor && TargetUnit->Squad->SquadDestroyed())
+		{
+			if (CurrentAbility)
+			{
+				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(CurrentAbility.GetDefaultObject());
+				AbilitySystem->CancelAbility(AbilityCDO);
+			}
+
+			CurrentAbility = nullptr;
+
+			if (Squad)
+			{
+				Squad->TargetSquadDestroyed(TargetUnit->Squad);
+			}
+		}
+	}
+}
+
+void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
+{
+	if (HasAuthority() && TargetSquad && TargetSquad == CurrentAbilityParams.Actor)
 	{
 		if (CurrentAbility)
 		{
@@ -192,6 +217,17 @@ void APSUnit::TargetDied(APSUnit* Target)
 
 		CurrentAbility = nullptr;
 	}
+}
+
+bool APSUnit::IsAlive()
+{
+	if (const UPSUnitAttributeSet* PSAttributeSet = Cast<UPSUnitAttributeSet>(AttributeSet))
+	{
+		float Health = PSAttributeSet->GetHealthAttribute().GetNumericValue(AttributeSet);
+		return Health > 0.0f;
+	}
+
+	return false;
 }
 
 void APSUnit::SetSelectionDecalVisibility(bool NewVisibility)
