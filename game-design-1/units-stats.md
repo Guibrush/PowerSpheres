@@ -34,5 +34,7 @@ Indicates how resistant this unit is to damage. Higher Defence means that potent
 
 Indicates how resistant this unit is to elemental status effects. Apart from the normal damage, an attack can have elemental status effects added such as fire, electricity, ice, poison, etc. The result of this effects varies depending on the element associated but they are always going to apply some numerical calculation to the target such as damage per second, movement reduction, etc. Elemental Defence reduces those numbers so an unit receives less damage per second during less amount of time, for example. More info in [Combat](combat.md#elemental-effects).
 
+### Vision Radius
 
+Indicates how far this unit is able to see through the Fog of War. Without this attribute the map is covered completely by the Fog of War, hiding enemies and other important elements for the gameplay. This attribute indicates the radius around itself in which this unit eliminates the Fog of War, showing enemies and other important actors.
 
