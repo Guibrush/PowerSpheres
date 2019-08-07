@@ -24,6 +24,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCancelItself = true;
 
+	/** Weapon to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	class USkeletalMesh* AbilityWeapon;
+
 	UPROPERTY(BlueprintReadOnly)
 	class APSUnit* UnitOwner;
 

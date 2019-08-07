@@ -8,6 +8,7 @@
 #include "GameplayAbilitySpec.h"
 #include "GAS/PSUnitAttributeSet.h"
 #include "PSTypes.h"
+#include "PSMeshMergeFunctionLibrary.h"
 #include "PSUnit.generated.h"
 
 UCLASS()
@@ -108,6 +109,9 @@ public:
 	/** Indicates whether this unit is covered in fog for this client or not. */
 	UPROPERTY(BlueprintReadOnly)
 	bool CoveredByFOW;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PSMesh)
+	FPSSkeletalMeshMergeParams MeshMergeParameters;
 
 protected:
 	// Called when the game starts or when spawned

@@ -76,6 +76,12 @@ void APSUnit::BeginPlay()
 	}
 
 	CheckInitMapComponents();
+
+	USkeletalMesh* MergedMesh = UPSMeshMergeFunctionLibrary::MergeMeshes(MeshMergeParameters);
+	if (MergedMesh)
+	{
+		GetMesh()->SetSkeletalMesh(MergedMesh);
+	}
 }
 
 void APSUnit::CheckInitMapComponents()

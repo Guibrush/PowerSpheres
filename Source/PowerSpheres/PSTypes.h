@@ -63,3 +63,20 @@ struct POWERSPHERES_API FAbilityParams
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* AISelectedTarget;
 };
+
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FUnitComposition
+{
+	GENERATED_USTRUCT_BODY()
+
+	FUnitComposition()
+		: UnitBlueprint(nullptr)
+		, UnitAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>>())
+	{ }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class APSUnit> UnitBlueprint;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
+};

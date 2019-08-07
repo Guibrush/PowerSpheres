@@ -53,8 +53,20 @@ public:
 	UFUNCTION()
 	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
-	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> CommonAbilities;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	int TotalUnitsNumber;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	int SpecialUnitsNumber;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	FUnitComposition CaptainUnitComposition;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	FUnitComposition BasicUnitComposition;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	TArray<FUnitComposition> SpecialUnitsComposition;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	ETeamType Team;
@@ -63,7 +75,13 @@ public:
 	class APSPlayerController* PlayerOwner;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	TArray<class APSUnit*> Units;
+	APSUnit* CaptainUnit;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TArray<APSUnit*> BasicUnits;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TMap<int, APSUnit*> SpecialUnits;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
@@ -72,5 +90,7 @@ protected:
 
 	// Called when the game starts or when spawned.
 	virtual void BeginPlay() override;
+
+	APSUnit* SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform);
 
 };
