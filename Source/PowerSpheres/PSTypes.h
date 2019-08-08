@@ -8,21 +8,21 @@
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	None,
-	ActionMoveTo,
-	ActionEnemyUnit,
-	ActionFriendlyUnit,
-	ActionNeutralUnit,
-	Ability1,
-	Ability2,
-	Ability3,
-	Ability4,
-	Ability5,
-	Ability6,
-	Ability7,
-	Ability8,
-	Ability9,
-	Ability10,
+	None = 0,
+	ActionMoveTo = 1,
+	ActionEnemyUnit = 2,
+	ActionFriendlyUnit = 3,
+	ActionNeutralUnit = 4,
+	Ability1 = 5,
+	Ability2 = 6,
+	Ability3 = 7,
+	Ability4 = 8,
+	Ability5 = 9,
+	Ability6 = 10,
+	Ability7 = 11,
+	Ability8 = 12,
+	Ability9 = 13,
+	Ability10 = 14,
 };
 
 UENUM(BlueprintType)

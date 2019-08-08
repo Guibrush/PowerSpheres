@@ -36,7 +36,7 @@ APSUnit::APSUnit()
 	// Our ability system component.
 	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 
-	CurrentAbility = nullptr;
+	CurrentAbilityType = EAbilityType::None;
 }
 
 // Called when the game starts or when spawned
@@ -129,7 +129,7 @@ void APSUnit::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(APSUnit, CurrentAbilityParams);
 	DOREPLIFETIME(APSUnit, Team);
 	DOREPLIFETIME(APSUnit, PlayerOwner);
-	DOREPLIFETIME(APSUnit, CurrentAbility);
+	DOREPLIFETIME(APSUnit, CurrentAbilityType);
 	DOREPLIFETIME(APSUnit, ActionMoveToLocation);
 }
 
@@ -150,6 +150,16 @@ void APSUnit::UnitDeselectedClient_Implementation()
 	SetSelectionDecalVisibility(false);
 }
 
+void APSUnit::GiveAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> Abilities)
+{
+	UnitAbilities = Abilities;
+
+	for (const TPair<EAbilityType, TSubclassOf<class UPSGameplayAbility>>& Ability : Abilities)
+	{
+		GiveAbility(Ability.Value);
+	}
+}
+
 void APSUnit::GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability)
 {
 	if (AbilitySystem)
@@ -161,18 +171,20 @@ void APSUnit::GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability)
 	}
 }
 
-void APSUnit::UseAbility(TSubclassOf<class UPSGameplayAbility> Ability, bool bIsUserInput)
+void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 {
+	TSubclassOf<class UPSGameplayAbility> Ability = UnitAbilities[AbilityType];
+
 	if (HasAuthority() && AbilitySystem && Ability)
 	{
 		if (bIsUserInput)
 		{
-			if (CurrentAbility)
+			if (CurrentAbilityType != EAbilityType::None)
 			{
 				UAIBlueprintHelperLibrary::SendAIMessage(this, "EndAbility", this, true);
 			}
 
-			CurrentAbility = Ability;
+			CurrentAbilityType = AbilityType;
 		}
 		else
 		{
@@ -198,13 +210,14 @@ void APSUnit::TargetDied(APSUnit* Target)
 		APSUnit* TargetUnit = Cast<APSUnit>(Target);
 		if (TargetUnit && TargetUnit->Squad == CurrentAbilityParams.Actor && TargetUnit->Squad->SquadDestroyed())
 		{
-			if (CurrentAbility)
+			if (CurrentAbilityType != EAbilityType::None)
 			{
-				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(CurrentAbility.GetDefaultObject());
+				TSubclassOf<class UPSGameplayAbility> Ability = UnitAbilities[CurrentAbilityType];
+				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
 				AbilitySystem->CancelAbility(AbilityCDO);
 			}
 
-			CurrentAbility = nullptr;
+			CurrentAbilityType = EAbilityType::None;
 
 			if (Squad)
 			{
@@ -218,13 +231,14 @@ void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
 {
 	if (HasAuthority() && TargetSquad && TargetSquad == CurrentAbilityParams.Actor)
 	{
-		if (CurrentAbility)
+		if (CurrentAbilityType != EAbilityType::None)
 		{
-			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(CurrentAbility.GetDefaultObject());
+			TSubclassOf<class UPSGameplayAbility> Ability = UnitAbilities[CurrentAbilityType];
+			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
 			AbilitySystem->CancelAbility(AbilityCDO);
 		}
 
-		CurrentAbility = nullptr;
+		CurrentAbilityType = EAbilityType::None;
 	}
 }
 
@@ -237,6 +251,17 @@ bool APSUnit::IsAlive()
 	}
 
 	return false;
+}
+
+TSubclassOf<class UPSGameplayAbility> APSUnit::GetCurrentAbility()
+{
+	TSubclassOf<class UPSGameplayAbility> Ability = nullptr;
+	if (CurrentAbilityType != EAbilityType::None)
+	{
+		Ability = UnitAbilities[CurrentAbilityType];
+	}
+
+	return Ability;
 }
 
 void APSUnit::SetSelectionDecalVisibility(bool NewVisibility)

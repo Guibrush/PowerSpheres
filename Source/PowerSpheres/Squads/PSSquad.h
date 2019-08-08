@@ -8,6 +8,41 @@
 #include "GAS/PSGameplayAbility.h"
 #include "PSSquad.generated.h"
 
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FAbilityMapping
+{
+	GENERATED_USTRUCT_BODY()
+
+	FAbilityMapping()
+		: AbilityType(EAbilityType::None)
+		, Unit(nullptr)
+	{ }
+
+	FAbilityMapping(EAbilityType NewAbilityType, APSUnit* NewUnit)
+		: AbilityType(NewAbilityType)
+		, Unit(NewUnit)
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	EAbilityType AbilityType;
+
+	UPROPERTY(BlueprintReadOnly)
+	APSUnit* Unit;
+};
+
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FAbilityMappingSet
+{
+	GENERATED_USTRUCT_BODY()
+
+	FAbilityMappingSet()
+		: AbilityMappings(TArray<FAbilityMapping>())
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FAbilityMapping> AbilityMappings;
+};
+
 class UPSSquadMemberComponent;
 
 UCLASS()
@@ -45,6 +80,10 @@ public:
 	/** Whether all the units of this squad had been killed or not. */
 	UFUNCTION(BlueprintCallable)
 	bool SquadDestroyed();
+
+	/** Gets all the units in this squad in a single array. */
+	UFUNCTION(BlueprintPure)
+	TArray<APSUnit*> GetAllUnits();
 
 	// Called when one of the units from this squad dies.
 	UFUNCTION()
@@ -86,11 +125,16 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
 
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TMap<EAbilityType, FAbilityMappingSet> AbilitiesMapping;
+
 protected:
 
 	// Called when the game starts or when spawned.
 	virtual void BeginPlay() override;
 
 	APSUnit* SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform);
+
+	void InitAbilitiesMapping();
 
 };

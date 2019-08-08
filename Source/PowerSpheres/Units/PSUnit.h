@@ -54,10 +54,10 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void UnitDeselectedClient();
 
-	void GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability);
+	void GiveAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> Abilities);
 
 	UFUNCTION(BlueprintCallable)
-	void UseAbility(TSubclassOf<class UPSGameplayAbility> Ability, bool bIsUserInput);
+	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);
 
 	UFUNCTION()
 	void Die(APSUnit* Attacker);
@@ -82,6 +82,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive();
 
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<class UPSGameplayAbility> GetCurrentAbility();
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	UDataTable* AttrDataTable;
 
@@ -103,8 +106,11 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FVector ActionMoveToLocation;
 
+	//UPROPERTY(BlueprintReadOnly, Replicated)
+	//TSubclassOf<class UPSGameplayAbility> CurrentAbility;
+
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	TSubclassOf<class UPSGameplayAbility> CurrentAbility;
+	EAbilityType CurrentAbilityType;
 
 	/** Indicates whether this unit is covered in fog for this client or not. */
 	UPROPERTY(BlueprintReadOnly)
@@ -112,6 +118,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PSMesh)
 	FPSSkeletalMeshMergeParams MeshMergeParameters;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
 
 protected:
 	// Called when the game starts or when spawned
@@ -148,5 +157,7 @@ private:
 	// Helper function to check when the game starts the initialization of the map components.
 	// It calls itself every tick if the PSPlayerController is not valid until is valid.
 	void CheckInitMapComponents();
+
+	void GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability);
 
 };
