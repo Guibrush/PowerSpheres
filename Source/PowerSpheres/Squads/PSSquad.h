@@ -43,6 +43,28 @@ struct POWERSPHERES_API FAbilityMappingSet
 	TArray<FAbilityMapping> AbilityMappings;
 };
 
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FSpecialUnitMap
+{
+	GENERATED_USTRUCT_BODY()
+
+	FSpecialUnitMap()
+		: UnitIndex(0)
+		, Unit(nullptr)
+	{ }
+
+	FSpecialUnitMap(int NewUnitIndex, APSUnit* NewUnit)
+		: UnitIndex(NewUnitIndex)
+		, Unit(NewUnit)
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	int UnitIndex;
+
+	UPROPERTY(BlueprintReadOnly)
+	APSUnit* Unit;
+};
+
 class UPSSquadMemberComponent;
 
 UCLASS()
@@ -92,6 +114,20 @@ public:
 	UFUNCTION()
 	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
+	/** 
+	Function executed from the server's player controller who owns this squad. This function will iterate over
+	the abilities mapping calling a client function on the player controller to receive the data.
+	*/
+	UFUNCTION()
+	void RequestAbilitiesMapping();
+
+	/**
+	This function will be called only on the client's player controller who owns this squad. This function
+	will introduce the new entry in the client's map.
+	*/
+	UFUNCTION()
+	void ReceivedAbilitiesMappingSet(EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
 	int TotalUnitsNumber;
 
@@ -120,12 +156,12 @@ public:
 	TArray<APSUnit*> BasicUnits;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	TMap<int, APSUnit*> SpecialUnits;
+	TArray<FSpecialUnitMap> SpecialUnits;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
 
-	UPROPERTY(BlueprintReadOnly, Replicated)
+	UPROPERTY(BlueprintReadOnly)
 	TMap<EAbilityType, FAbilityMappingSet> AbilitiesMapping;
 
 protected:
@@ -133,8 +169,12 @@ protected:
 	// Called when the game starts or when spawned.
 	virtual void BeginPlay() override;
 
+private:
+
 	APSUnit* SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform);
 
 	void InitAbilitiesMapping();
+
+	void AddUnitToAbilitiesMapping(FUnitComposition UnitComposition, APSUnit* NewUnit);
 
 };

@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Abilities/GameplayAbility.h"
+#include "PSTypes.h"
 #include "PSGameplayAbility.generated.h"
 
 /**
@@ -24,9 +25,13 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCancelItself = true;
 
-	/** Weapon to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	class USkeletalMesh* AbilityWeapon;
+	///** Weapon to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
+	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	//class USkeletalMesh* AbilityWeapon;
+
+	/** Weapon data to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UWeaponData* WeaponData;
 
 	UPROPERTY(BlueprintReadOnly)
 	class APSUnit* UnitOwner;

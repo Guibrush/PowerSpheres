@@ -80,3 +80,42 @@ struct POWERSPHERES_API FUnitComposition
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
 };
+
+UCLASS(BlueprintType)
+class POWERSPHERES_API UWeaponData : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+
+	UWeaponData()
+		: IdleAnim(nullptr)
+		, IdleBreakAnim(nullptr)
+		, RunAnim(nullptr)
+		, ShootAnim(nullptr)
+		, ShootIdleAnim(nullptr)
+		, ReloadAnim(nullptr)
+		, AbilityWeapon(nullptr)
+	{ }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* IdleAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* IdleBreakAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* RunAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ShootAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ShootIdleAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ReloadAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* AbilityWeapon;
+};

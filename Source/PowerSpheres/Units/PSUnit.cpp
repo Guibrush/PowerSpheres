@@ -82,6 +82,11 @@ void APSUnit::BeginPlay()
 	{
 		GetMesh()->SetSkeletalMesh(MergedMesh);
 	}
+
+	if (!HasAuthority() && PlayerOwner)
+	{
+		PlayerOwner->RequestUnitAbilitiesServer(this);
+	}
 }
 
 void APSUnit::CheckInitMapComponents()
@@ -131,6 +136,8 @@ void APSUnit::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(APSUnit, PlayerOwner);
 	DOREPLIFETIME(APSUnit, CurrentAbilityType);
 	DOREPLIFETIME(APSUnit, ActionMoveToLocation);
+	DOREPLIFETIME(APSUnit, EquippedWeaponData);
+	DOREPLIFETIME(APSUnit, MeshMergeParameters);
 }
 
 void APSUnit::PossessedBy(AController* NewController)
@@ -286,4 +293,17 @@ void APSUnit::OnUnitEnteredFOW(UMapIconComponent* MapIconComp, UMapViewComponent
 	CoveredByFOW = true;
 
 	UnitEnteredFOW();
+}
+
+void APSUnit::RequestAbilities()
+{
+	for (const TPair<EAbilityType, TSubclassOf<class UPSGameplayAbility>>& Ability : UnitAbilities)
+	{
+		PlayerOwner->ReceivedUnitAbilityClient(this, Ability.Key, Ability.Value);
+	}
+}
+
+void APSUnit::ReceivedAbility(EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility)
+{
+	UnitAbilities.Add(NewAbilityType, NewAbility);
 }
