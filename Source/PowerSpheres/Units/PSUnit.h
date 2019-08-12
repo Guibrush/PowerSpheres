@@ -120,9 +120,6 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FVector ActionMoveToLocation;
 
-	//UPROPERTY(BlueprintReadOnly, Replicated)
-	//TSubclassOf<class UPSGameplayAbility> CurrentAbility;
-
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	EAbilityType CurrentAbilityType;
 

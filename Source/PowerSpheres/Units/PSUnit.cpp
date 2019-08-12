@@ -225,6 +225,7 @@ void APSUnit::TargetDied(APSUnit* Target)
 			}
 
 			CurrentAbilityType = EAbilityType::None;
+			CurrentAbilityParams = FAbilityParams();
 
 			if (Squad)
 			{
@@ -246,6 +247,7 @@ void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
 		}
 
 		CurrentAbilityType = EAbilityType::None;
+		CurrentAbilityParams = FAbilityParams();
 	}
 }
 

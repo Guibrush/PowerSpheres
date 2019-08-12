@@ -228,81 +228,90 @@ void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation
 	TArray<UPSSquadMemberComponent*> OccupiedComponents = TArray<UPSSquadMemberComponent*>();
 
 	// First I look for the component which is in the origin position of the squad and move the captain there.
-	for (UPSSquadMemberComponent* SquadMemberComponent : SquadMemberComponents)
+	if (CaptainUnit)
 	{
-		if (SquadMemberComponent->GetRelativeTransform().GetLocation() == FVector::ZeroVector)
+		for (UPSSquadMemberComponent* SquadMemberComponent : SquadMemberComponents)
 		{
-			CaptainUnit->ActionMoveToLocation = SquadMemberComponent->GetComponentLocation();
-			OccupiedComponents.Add(SquadMemberComponent);
-			CaptainUnit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
-			break;
+			if (SquadMemberComponent->GetRelativeTransform().GetLocation() == FVector::ZeroVector)
+			{
+				CaptainUnit->ActionMoveToLocation = SquadMemberComponent->GetComponentLocation();
+				OccupiedComponents.Add(SquadMemberComponent);
+				CaptainUnit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
+				break;
+			}
 		}
 	}
 
 	// I move the basic units right after the captain because with the current implementation they are going to
 	// try to fill the most far away positions from the front of the squad.
-	TArray<APSUnit*> SortedUnits = BasicUnits;
-	SortedUnits.Sort([this](const APSUnit& UnitA, const APSUnit& UnitB)
-		{
-			float DistanceA = FVector::DistSquared(UnitA.GetActorLocation(), this->GetActorLocation());
-			float DistanceB = FVector::DistSquared(UnitB.GetActorLocation(), this->GetActorLocation());
-			return DistanceA > DistanceB;
-		});
-
-	for (APSUnit* Unit : SortedUnits)
+	if (BasicUnits.Num() > 0)
 	{
-		if (Unit)
-		{
-			SquadMemberComponents.Sort([Unit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
-				{
-					float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), Unit->GetActorLocation());
-					float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), Unit->GetActorLocation());
-					return DistanceA < DistanceB;
-				});
-			int i = 0;
-			while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
+		TArray<APSUnit*> SortedUnits = BasicUnits;
+		SortedUnits.Sort([this](const APSUnit& UnitA, const APSUnit& UnitB)
 			{
-				i++;
+				float DistanceA = FVector::DistSquared(UnitA.GetActorLocation(), this->GetActorLocation());
+				float DistanceB = FVector::DistSquared(UnitB.GetActorLocation(), this->GetActorLocation());
+				return DistanceA > DistanceB;
+			});
+
+		for (APSUnit* Unit : SortedUnits)
+		{
+			if (Unit)
+			{
+				SquadMemberComponents.Sort([Unit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
+					{
+						float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), Unit->GetActorLocation());
+						float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), Unit->GetActorLocation());
+						return DistanceA < DistanceB;
+					});
+				int i = 0;
+				while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
+				{
+					i++;
+				}
+
+				Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
+
+				OccupiedComponents.Add(SquadMemberComponents[i]);
+
+				Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 			}
-
-			Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
-
-			OccupiedComponents.Add(SquadMemberComponents[i]);
-
-			Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 		}
 	}
 
 	// Then I move the special units to the closests positions behind the captain.
-	TArray<FSpecialUnitMap> SortedSpecialUnits = SpecialUnits;
-	SortedSpecialUnits.Sort([this](const FSpecialUnitMap SpecialUnitMapA, const FSpecialUnitMap SpecialUnitMapB)
-		{
-			float DistanceA = FVector::DistSquared(SpecialUnitMapA.Unit->GetActorLocation(), this->GetActorLocation());
-			float DistanceB = FVector::DistSquared(SpecialUnitMapB.Unit->GetActorLocation(), this->GetActorLocation());
-			return DistanceA > DistanceB;
-		});
-
-	for (FSpecialUnitMap SpecialUnit : SortedSpecialUnits)
+	if (SpecialUnits.Num() > 0)
 	{
-		if (SpecialUnit.Unit)
-		{
-			SquadMemberComponents.Sort([SpecialUnit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
-				{
-					float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
-					float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
-					return DistanceA < DistanceB;
-				});
-			int i = 0;
-			while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
+		TArray<FSpecialUnitMap> SortedSpecialUnits = SpecialUnits;
+		SortedSpecialUnits.Sort([this](const FSpecialUnitMap SpecialUnitMapA, const FSpecialUnitMap SpecialUnitMapB)
 			{
-				i++;
+				float DistanceA = FVector::DistSquared(SpecialUnitMapA.Unit->GetActorLocation(), this->GetActorLocation());
+				float DistanceB = FVector::DistSquared(SpecialUnitMapB.Unit->GetActorLocation(), this->GetActorLocation());
+				return DistanceA > DistanceB;
+			});
+
+		for (FSpecialUnitMap SpecialUnit : SortedSpecialUnits)
+		{
+			if (SpecialUnit.Unit)
+			{
+				SquadMemberComponents.Sort([SpecialUnit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
+					{
+						float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
+						float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
+						return DistanceA < DistanceB;
+					});
+				int i = 0;
+				while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
+				{
+					i++;
+				}
+
+				SpecialUnit.Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
+
+				OccupiedComponents.Add(SquadMemberComponents[i]);
+
+				SpecialUnit.Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 			}
-
-			SpecialUnit.Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
-
-			OccupiedComponents.Add(SquadMemberComponents[i]);
-
-			SpecialUnit.Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 		}
 	}
 }
