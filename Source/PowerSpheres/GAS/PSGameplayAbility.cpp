@@ -24,9 +24,14 @@ void UPSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 
 	if (bCancelItself)
 	{
-		if (UnitOwner && UnitOwner->CurrentAbility && UnitOwner->CurrentAbility == GetClass())
+		if (UnitOwner && UnitOwner->CurrentAbilityType != EAbilityType::None)
 		{
-			UnitOwner->CurrentAbility = nullptr;
+			TSubclassOf<class UPSGameplayAbility> CurrentAbility = UnitOwner->GetCurrentAbility();
+			if (CurrentAbility == GetClass())
+			{
+				UnitOwner->CurrentAbilityType = EAbilityType::None;
+				UnitOwner->CurrentAbilityParams = FAbilityParams();
+			}
 		}
 	}
 }

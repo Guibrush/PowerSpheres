@@ -8,21 +8,21 @@
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	None,
-	ActionMoveTo,
-	ActionEnemyUnit,
-	ActionFriendlyUnit,
-	ActionNeutralUnit,
-	Ability1,
-	Ability2,
-	Ability3,
-	Ability4,
-	Ability5,
-	Ability6,
-	Ability7,
-	Ability8,
-	Ability9,
-	Ability10,
+	None = 0,
+	ActionMoveTo = 1,
+	ActionEnemyUnit = 2,
+	ActionFriendlyUnit = 3,
+	ActionNeutralUnit = 4,
+	Ability1 = 5,
+	Ability2 = 6,
+	Ability3 = 7,
+	Ability4 = 8,
+	Ability5 = 9,
+	Ability6 = 10,
+	Ability7 = 11,
+	Ability8 = 12,
+	Ability9 = 13,
+	Ability10 = 14,
 };
 
 UENUM(BlueprintType)
@@ -62,4 +62,60 @@ struct POWERSPHERES_API FAbilityParams
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	AActor* AISelectedTarget;
+};
+
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FUnitComposition
+{
+	GENERATED_USTRUCT_BODY()
+
+	FUnitComposition()
+		: UnitBlueprint(nullptr)
+		, UnitAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>>())
+	{ }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class APSUnit> UnitBlueprint;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
+};
+
+UCLASS(BlueprintType)
+class POWERSPHERES_API UWeaponData : public UDataAsset
+{
+	GENERATED_BODY()
+
+public:
+
+	UWeaponData()
+		: IdleAnim(nullptr)
+		, IdleBreakAnim(nullptr)
+		, RunAnim(nullptr)
+		, ShootAnim(nullptr)
+		, ShootIdleAnim(nullptr)
+		, ReloadAnim(nullptr)
+		, AbilityWeapon(nullptr)
+	{ }
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* IdleAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* IdleBreakAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* RunAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ShootAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ShootIdleAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* ReloadAnim;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	USkeletalMesh* AbilityWeapon;
 };

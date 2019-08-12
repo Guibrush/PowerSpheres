@@ -8,6 +8,63 @@
 #include "GAS/PSGameplayAbility.h"
 #include "PSSquad.generated.h"
 
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FAbilityMapping
+{
+	GENERATED_USTRUCT_BODY()
+
+	FAbilityMapping()
+		: AbilityType(EAbilityType::None)
+		, Unit(nullptr)
+	{ }
+
+	FAbilityMapping(EAbilityType NewAbilityType, APSUnit* NewUnit)
+		: AbilityType(NewAbilityType)
+		, Unit(NewUnit)
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	EAbilityType AbilityType;
+
+	UPROPERTY(BlueprintReadOnly)
+	APSUnit* Unit;
+};
+
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FAbilityMappingSet
+{
+	GENERATED_USTRUCT_BODY()
+
+	FAbilityMappingSet()
+		: AbilityMappings(TArray<FAbilityMapping>())
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	TArray<FAbilityMapping> AbilityMappings;
+};
+
+USTRUCT(BlueprintType)
+struct POWERSPHERES_API FSpecialUnitMap
+{
+	GENERATED_USTRUCT_BODY()
+
+	FSpecialUnitMap()
+		: UnitIndex(0)
+		, Unit(nullptr)
+	{ }
+
+	FSpecialUnitMap(int NewUnitIndex, APSUnit* NewUnit)
+		: UnitIndex(NewUnitIndex)
+		, Unit(NewUnit)
+	{ }
+
+	UPROPERTY(BlueprintReadOnly)
+	int UnitIndex;
+
+	UPROPERTY(BlueprintReadOnly)
+	APSUnit* Unit;
+};
+
 class UPSSquadMemberComponent;
 
 UCLASS()
@@ -46,6 +103,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool SquadDestroyed();
 
+	/** Gets all the units in this squad in a single array. */
+	UFUNCTION(BlueprintPure)
+	TArray<APSUnit*> GetAllUnits();
+
 	// Called when one of the units from this squad dies.
 	UFUNCTION()
 	void UnitDied(APSUnit* Unit);
@@ -53,8 +114,34 @@ public:
 	UFUNCTION()
 	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
-	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> CommonAbilities;
+	/** 
+	Function executed from the server's player controller who owns this squad. This function will iterate over
+	the abilities mapping calling a client function on the player controller to receive the data.
+	*/
+	UFUNCTION()
+	void RequestAbilitiesMapping();
+
+	/**
+	This function will be called only on the client's player controller who owns this squad. This function
+	will introduce the new entry in the client's map.
+	*/
+	UFUNCTION()
+	void ReceivedAbilitiesMappingSet(EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet);
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	int TotalUnitsNumber;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	int SpecialUnitsNumber;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	FUnitComposition CaptainUnitComposition;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	FUnitComposition BasicUnitComposition;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
+	TArray<FUnitComposition> SpecialUnitsComposition;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	ETeamType Team;
@@ -63,14 +150,31 @@ public:
 	class APSPlayerController* PlayerOwner;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	TArray<class APSUnit*> Units;
+	APSUnit* CaptainUnit;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TArray<APSUnit*> BasicUnits;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TArray<FSpecialUnitMap> SpecialUnits;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<EAbilityType, FAbilityMappingSet> AbilitiesMapping;
 
 protected:
 
 	// Called when the game starts or when spawned.
 	virtual void BeginPlay() override;
+
+private:
+
+	APSUnit* SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform);
+
+	void InitAbilitiesMapping();
+
+	void AddUnitToAbilitiesMapping(FUnitComposition UnitComposition, APSUnit* NewUnit);
 
 };

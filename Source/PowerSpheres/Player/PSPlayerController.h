@@ -21,7 +21,23 @@ public:
 	/** Marks the properties we wish to replicate */
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 
-	/** Squad blueprints used for PIE. ONLY FOR TESTING PURPOSES. */
+	/** Proxy function called from the client version of the squad to request the abilities mapping data. */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestSquadAbilitiesMappingServer(APSSquad* Squad);
+
+	/** Proxy function called from the server version of the squad to send the data to the client. */
+	UFUNCTION(Client, Reliable)
+	void ReceivedSquadAbilitiesMappingSetClient(APSSquad* Squad, EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet);
+
+	/** Proxy function called from the client version of the unit to request the abilities data. */
+	UFUNCTION(Server, Reliable, WithValidation)
+	void RequestUnitAbilitiesServer(APSUnit* Unit);
+
+	/** Proxy function called from the server version of the unit to send the data to the client. */
+	UFUNCTION(Client, Reliable)
+	void ReceivedUnitAbilityClient(APSUnit* Unit, EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility);
+
+	/** Squad blueprints used for PIE. WARNING: ONLY FOR TESTING PURPOSES. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<APSSquad>> SquadsToPIE;
 

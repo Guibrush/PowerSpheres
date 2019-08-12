@@ -8,6 +8,7 @@
 #include "GameplayAbilitySpec.h"
 #include "GAS/PSUnitAttributeSet.h"
 #include "PSTypes.h"
+#include "PSMeshMergeFunctionLibrary.h"
 #include "PSUnit.generated.h"
 
 UCLASS()
@@ -53,10 +54,10 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void UnitDeselectedClient();
 
-	void GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability);
+	void GiveAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> Abilities);
 
 	UFUNCTION(BlueprintCallable)
-	void UseAbility(TSubclassOf<class UPSGameplayAbility> Ability, bool bIsUserInput);
+	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);
 
 	UFUNCTION()
 	void Die(APSUnit* Attacker);
@@ -81,6 +82,23 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool IsAlive();
 
+	UFUNCTION(BlueprintCallable)
+	TSubclassOf<class UPSGameplayAbility> GetCurrentAbility();
+
+	/**
+	Function executed from the server's player controller who owns this unit. This function will iterate over
+	the abilities calling a client function on the player controller to receive the data.
+	*/
+	UFUNCTION()
+	void RequestAbilities();
+
+	/**
+	This function will be called only on the client's player controller who owns this unit. This function
+	will introduce the new entry in the client's map.
+	*/
+	UFUNCTION()
+	void ReceivedAbility(EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility);
+
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	UDataTable* AttrDataTable;
 
@@ -103,11 +121,20 @@ public:
 	FVector ActionMoveToLocation;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	TSubclassOf<class UPSGameplayAbility> CurrentAbility;
+	EAbilityType CurrentAbilityType;
 
 	/** Indicates whether this unit is covered in fog for this client or not. */
 	UPROPERTY(BlueprintReadOnly)
 	bool CoveredByFOW;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PSMesh, Replicated)
+	FPSSkeletalMeshMergeParams MeshMergeParameters;
+
+	UPROPERTY(BlueprintReadOnly)
+	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
+
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	UWeaponData* EquippedWeaponData;
 
 protected:
 	// Called when the game starts or when spawned
@@ -144,5 +171,7 @@ private:
 	// Helper function to check when the game starts the initialization of the map components.
 	// It calls itself every tick if the PSPlayerController is not valid until is valid.
 	void CheckInitMapComponents();
+
+	void GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability);
 
 };
