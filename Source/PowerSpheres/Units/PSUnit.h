@@ -150,6 +150,9 @@ protected:
 	UFUNCTION()
 	void OnUnitEnteredFOW(class UMapIconComponent* MapIconComp, class UMapViewComponent* MapViewComp);
 
+	UFUNCTION()
+	void SetCurrentAbilityType(EAbilityType NewAbilityType);
+
 private:
 
 	/** Component to reveal the FOW around this actor. */

@@ -14,6 +14,7 @@
 #include "MapRevealerComponent.h"
 #include "MapIconComponent.h"
 #include "Engine/World.h"
+#include "TimerManager.h"
 
 // Sets default values
 APSUnit::APSUnit()
@@ -188,16 +189,33 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 		{
 			if (CurrentAbilityType != EAbilityType::None)
 			{
-				UAIBlueprintHelperLibrary::SendAIMessage(this, "EndAbility", this, true);
+				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
+				AbilitySystem->CancelAbility(AbilityCDO);
 			}
 
-			CurrentAbilityType = AbilityType;
+			CurrentAbilityType = EAbilityType::None;
+
+			// We wait one tick after setting CurrentAbilityType to None to let the AI to run
+			// their logic.
+			UWorld* const World = GetWorld();
+			if (World)
+			{
+				FTimerDelegate TimerDelegate;
+				TimerDelegate.BindUFunction(this, FName("SetCurrentAbilityType"), AbilityType);
+				World->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+
 		}
 		else
 		{
 			AbilitySystem->TryActivateAbilityByClass(Ability.Get());
 		}
 	}
+}
+
+void APSUnit::SetCurrentAbilityType(EAbilityType NewAbilityType)
+{
+	CurrentAbilityType = NewAbilityType;
 }
 
 void APSUnit::Die(APSUnit* Attacker)
