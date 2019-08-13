@@ -39,6 +39,9 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	class APSUnitController* ControllerOwner;
 
+	UFUNCTION(BlueprintPure)
+	bool IsAbilityActive() const;
+
 protected:
 
 	// Begin GameplayAbility interface
