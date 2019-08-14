@@ -54,7 +54,7 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void UnitDeselectedClient();
 
-	void GiveAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> Abilities);
+	void GivePowers(TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres);
 
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);
@@ -84,20 +84,6 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	TSubclassOf<class UPSGameplayAbility> GetCurrentAbility();
-
-	/**
-	Function executed from the server's player controller who owns this unit. This function will iterate over
-	the abilities calling a client function on the player controller to receive the data.
-	*/
-	UFUNCTION()
-	void RequestAbilities();
-
-	/**
-	This function will be called only on the client's player controller who owns this unit. This function
-	will introduce the new entry in the client's map.
-	*/
-	UFUNCTION()
-	void ReceivedAbility(EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility);
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = Abilities)
 	UDataTable* AttrDataTable;
@@ -130,8 +116,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PSMesh, Replicated)
 	FPSSkeletalMeshMergeParams MeshMergeParameters;
 
-	UPROPERTY(BlueprintReadOnly)
-	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
+	//UPROPERTY(BlueprintReadOnly)
+	//TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	UWeaponData* EquippedWeaponData;

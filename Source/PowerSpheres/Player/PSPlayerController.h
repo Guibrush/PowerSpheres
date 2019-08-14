@@ -29,14 +29,6 @@ public:
 	UFUNCTION(Client, Reliable)
 	void ReceivedSquadAbilitiesMappingSetClient(APSSquad* Squad, EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet);
 
-	/** Proxy function called from the client version of the unit to request the abilities data. */
-	UFUNCTION(Server, Reliable, WithValidation)
-	void RequestUnitAbilitiesServer(APSUnit* Unit);
-
-	/** Proxy function called from the server version of the unit to send the data to the client. */
-	UFUNCTION(Client, Reliable)
-	void ReceivedUnitAbilityClient(APSUnit* Unit, EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility);
-
 	/** Squad blueprints used for PIE. WARNING: ONLY FOR TESTING PURPOSES. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<APSSquad>> SquadsToPIE;

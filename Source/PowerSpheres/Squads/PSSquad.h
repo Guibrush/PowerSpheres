@@ -9,38 +9,16 @@
 #include "PSSquad.generated.h"
 
 USTRUCT(BlueprintType)
-struct POWERSPHERES_API FAbilityMapping
-{
-	GENERATED_USTRUCT_BODY()
-
-	FAbilityMapping()
-		: AbilityType(EAbilityType::None)
-		, Unit(nullptr)
-	{ }
-
-	FAbilityMapping(EAbilityType NewAbilityType, APSUnit* NewUnit)
-		: AbilityType(NewAbilityType)
-		, Unit(NewUnit)
-	{ }
-
-	UPROPERTY(BlueprintReadOnly)
-	EAbilityType AbilityType;
-
-	UPROPERTY(BlueprintReadOnly)
-	APSUnit* Unit;
-};
-
-USTRUCT(BlueprintType)
 struct POWERSPHERES_API FAbilityMappingSet
 {
 	GENERATED_USTRUCT_BODY()
 
 	FAbilityMappingSet()
-		: AbilityMappings(TArray<FAbilityMapping>())
+		: UnitAbilityMap(TMap<APSUnit*, TSubclassOf<class UPSGameplayAbility>>())
 	{ }
 
 	UPROPERTY(BlueprintReadOnly)
-	TArray<FAbilityMapping> AbilityMappings;
+	TMap<APSUnit*, TSubclassOf<class UPSGameplayAbility>> UnitAbilityMap;
 };
 
 USTRUCT(BlueprintType)

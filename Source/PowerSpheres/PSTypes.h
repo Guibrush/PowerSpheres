@@ -8,21 +8,22 @@
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	None = 0,
-	ActionMoveTo = 1,
-	ActionEnemyUnit = 2,
-	ActionFriendlyUnit = 3,
-	ActionNeutralUnit = 4,
-	Ability1 = 5,
-	Ability2 = 6,
-	Ability3 = 7,
-	Ability4 = 8,
-	Ability5 = 9,
-	Ability6 = 10,
-	Ability7 = 11,
-	Ability8 = 12,
-	Ability9 = 13,
-	Ability10 = 14,
+	None,
+	ActionMoveTo,
+	ActionEnemyUnit,
+	ActionFriendlyUnit,
+	ActionNeutralUnit,
+	Ability1,
+	Ability2,
+	Ability3,
+	Ability4,
+	Ability5,
+	Ability6,
+	Ability7,
+	Ability8,
+	Ability9,
+	Ability10,
+	MAX,
 };
 
 UENUM(BlueprintType)
@@ -33,6 +34,15 @@ enum class ETeamType : uint8
 	Team2 = 2,
 	Team3 = 3,
 	Neutral,
+};
+
+UENUM(BlueprintType)
+enum class EPowerSphereType : uint8
+{
+	None,
+	Generic,
+	ActionMoveTo,
+	ActionEnemyUnit,
 };
 
 USTRUCT(BlueprintType)
@@ -71,14 +81,14 @@ struct POWERSPHERES_API FUnitComposition
 
 	FUnitComposition()
 		: UnitBlueprint(nullptr)
-		, UnitAbilities(TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>>())
+		, PowerSpheres(TMap<EPowerSphereType, TSubclassOf<class UPSPowerSphere>>())
 	{ }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<class APSUnit> UnitBlueprint;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> UnitAbilities;
+	TMap<EPowerSphereType, TSubclassOf<class UPSPowerSphere>> PowerSpheres;
 };
 
 UCLASS(BlueprintType)

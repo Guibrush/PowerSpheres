@@ -286,21 +286,6 @@ void APSPlayerController::ReceivedSquadAbilitiesMappingSetClient_Implementation(
 	Squad->ReceivedAbilitiesMappingSet(NewAbilityType, NewAbilityMappingSet);
 }
 
-void APSPlayerController::RequestUnitAbilitiesServer_Implementation(APSUnit* Unit)
-{
-	Unit->RequestAbilities();
-}
-
-bool APSPlayerController::RequestUnitAbilitiesServer_Validate(APSUnit* Unit)
-{
-	return true;
-}
-
-void APSPlayerController::ReceivedUnitAbilityClient_Implementation(APSUnit* Unit, EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility)
-{
-	Unit->ReceivedAbility(NewAbilityType, NewAbility);
-}
-
 void APSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
