@@ -38,7 +38,7 @@ APSUnit::APSUnit()
 	// Our ability system component.
 	AbilitySystem = CreateDefaultSubobject<UAbilitySystemComponent>(TEXT("AbilitySystem"));
 
-	CurrentAbilityType = EAbilityType::None;
+	ResetCurrentAbility();
 }
 
 // Called when the game starts or when spawned
@@ -200,7 +200,7 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 					AbilitySystem->CancelAbility(AbilityCDO);
 				}
 
-				CurrentAbilityType = EAbilityType::None;
+				ResetCurrentAbility(false);
 
 				// We wait one tick after setting CurrentAbilityType to None to let the AI to run
 				// their logic.
@@ -241,19 +241,9 @@ void APSUnit::TargetDied(APSUnit* Target)
 	if (HasAuthority() && Squad && Target)
 	{
 		APSUnit* TargetUnit = Cast<APSUnit>(Target);
-		if (TargetUnit && TargetUnit->Squad == CurrentAbilityParams.Actor && TargetUnit->Squad->SquadDestroyed())
+		if (TargetUnit && TargetUnit->Squad == CurrentAbilityParams.Actor)
 		{
-			if (CurrentAbilityType != EAbilityType::None)
-			{
-				TSubclassOf<class UPSGameplayAbility> Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
-				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
-				AbilitySystem->CancelAbility(AbilityCDO);
-			}
-
-			CurrentAbilityType = EAbilityType::None;
-			CurrentAbilityParams = FAbilityParams();
-
-			if (Squad)
+			if (TargetUnit->Squad->SquadDestroyed())
 			{
 				Squad->TargetSquadDestroyed(TargetUnit->Squad);
 			}
@@ -272,9 +262,40 @@ void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
 			AbilitySystem->CancelAbility(AbilityCDO);
 		}
 
-		CurrentAbilityType = EAbilityType::None;
-		CurrentAbilityParams = FAbilityParams();
+		ResetCurrentAbility();
 	}
+}
+
+void APSUnit::AbilityFinished(UPSGameplayAbility* Ability)
+{
+	if (HasAuthority() && Squad && CurrentAbilityType != EAbilityType::None)
+	{
+		TSubclassOf<class UPSGameplayAbility> CurrentAbility = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
+		if (CurrentAbility == Ability->GetClass())
+		{
+			APSSquad* TargetSquad = Cast<APSSquad>(CurrentAbilityParams.Actor);
+			if (!TargetSquad)
+			{
+				ResetCurrentAbility(true);
+			}
+			else if (TargetSquad->SquadDestroyed())
+			{
+				ResetCurrentAbility(true);
+			}
+			else
+			{
+				ResetCurrentAbility(false);
+			}
+		}
+	}
+}
+
+void APSUnit::ResetCurrentAbility(bool ResetAbilityParams)
+{
+	CurrentAbilityType = EAbilityType::None;
+
+	if (ResetAbilityParams)
+		CurrentAbilityParams = FAbilityParams();
 }
 
 bool APSUnit::IsAlive()

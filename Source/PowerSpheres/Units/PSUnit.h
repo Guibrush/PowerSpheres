@@ -68,6 +68,12 @@ public:
 	UFUNCTION()
 	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
+	UFUNCTION()
+	void AbilityFinished(UPSGameplayAbility* Ability);
+
+	UFUNCTION()
+	void ResetCurrentAbility(bool ResetAbilityParams=true);
+
 	// TODO: This is part of the nasty hack that we are doing on the Tick. When the hack is fixed we need to reevaluate if we need this
 	// function at all.
 	UFUNCTION(BlueprintImplementableEvent)

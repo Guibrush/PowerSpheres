@@ -222,6 +222,7 @@ void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation
 			if (SquadMemberComponent->GetRelativeTransform().GetLocation() == FVector::ZeroVector)
 			{
 				CaptainUnit->ActionMoveToLocation = SquadMemberComponent->GetComponentLocation();
+				CaptainUnit->CurrentAbilityParams = FAbilityParams();
 				OccupiedComponents.Add(SquadMemberComponent);
 				CaptainUnit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 				break;
@@ -258,6 +259,7 @@ void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation
 				}
 
 				Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
+				Unit->CurrentAbilityParams = FAbilityParams();
 
 				OccupiedComponents.Add(SquadMemberComponents[i]);
 
@@ -294,6 +296,7 @@ void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation
 				}
 
 				SpecialUnit.Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
+				SpecialUnit.Unit->CurrentAbilityParams = FAbilityParams();
 
 				OccupiedComponents.Add(SquadMemberComponents[i]);
 
