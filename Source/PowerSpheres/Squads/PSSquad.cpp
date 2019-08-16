@@ -27,10 +27,10 @@ void APSSquad::BeginPlay()
 {
 	Super::BeginPlay();
 
-	InitAbilitiesMapping();
-
 	if (HasAuthority())
 	{
+		InitAbilitiesMapping();
+
 		// We need at least a TotalUnitsNumber of 1 unit. The requirement is that we need to spawn at least a captain for the squad.
 		// Also if we have special units in the squad, that number needs to be less than the total units. This way we allow squads
 		// with only a captain and special units (without basic units) or an unit with only the captain (a hero or something similar).
@@ -65,13 +65,6 @@ void APSSquad::BeginPlay()
 			}
 		}
 	}
-	else
-	{
-		if (PlayerOwner)
-		{
-			PlayerOwner->RequestSquadAbilitiesMappingServer(this);
-		}
-	}
 }
 
 APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform)
@@ -83,7 +76,7 @@ APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTr
 		NewUnit = World->SpawnActorDeferred<APSUnit>(UnitComposition.UnitBlueprint, UnitTransform, this);
 		if (NewUnit)
 		{
-			UPSPowerSphere* PowerSphere = UnitComposition.PowerSpheres.Find(EPowerSphereType::ActionEnemyUnit)->GetDefaultObject();
+			UPSPowerSphere* PowerSphere = UnitComposition.WeaponSlot.GetDefaultObject();
 			if (PowerSphere)
 			{
 				UPSGameplayAbility* GameplayAbility = PowerSphere->GameplayAbility.GetDefaultObject();
@@ -98,11 +91,7 @@ APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTr
 			NewUnit->PlayerOwner = PlayerOwner;
 			NewUnit->FinishSpawning(UnitTransform);
 
-			TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheresArray;
-			UnitComposition.PowerSpheres.GenerateValueArray(PowerSpheresArray);
-			NewUnit->GivePowers(PowerSpheresArray);
-
-			AddUnitToAbilitiesMapping(UnitComposition, NewUnit);
+			ConstructAbilities(UnitComposition, NewUnit);
 		}
 	}
 
@@ -120,58 +109,62 @@ void APSSquad::InitAbilitiesMapping()
 	}
 }
 
-void APSSquad::AddUnitToAbilitiesMapping(FUnitComposition UnitComposition, APSUnit* NewUnit)
+void APSSquad::ConstructAbilities(FUnitComposition UnitComposition, APSUnit* NewUnit)
 {
-	for (const TPair<EPowerSphereType, TSubclassOf<class UPSPowerSphere>>& PowerSphere : UnitComposition.PowerSpheres)
+	TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres = TArray<TSubclassOf<class UPSPowerSphere>>();
+
+	if (UnitComposition.MovementSlot)
 	{
-		UPSPowerSphere* PowerSphereObject = PowerSphere.Value.GetDefaultObject();
+		UPSPowerSphere* MovementPowerSphere = UnitComposition.MovementSlot.GetDefaultObject();
+		if (MovementPowerSphere)
+		{
+			AbilitiesMapping[EAbilityType::ActionMoveTo].UnitAbilityMap.Add(NewUnit, MovementPowerSphere->GameplayAbility);
+		}
+
+		PowerSpheres.Add(UnitComposition.MovementSlot);
+	}
+
+	if (UnitComposition.WeaponSlot)
+	{
+		UPSPowerSphere* WeaponPowerSphere = UnitComposition.WeaponSlot.GetDefaultObject();
+		if (WeaponPowerSphere)
+		{
+			AbilitiesMapping[EAbilityType::ActionEnemyUnit].UnitAbilityMap.Add(NewUnit, WeaponPowerSphere->GameplayAbility);
+		}
+
+		PowerSpheres.Add(UnitComposition.WeaponSlot);
+	}
+
+	PowerSpheres.Append(UnitComposition.AbilitiesPowerSpheres);
+	PowerSpheres.Append(UnitComposition.EffectsPowerSpheres);
+
+	NewUnit->GivePowers(PowerSpheres);
+
+	for (TSubclassOf<class UPSPowerSphere> PowerSphere : UnitComposition.AbilitiesPowerSpheres)
+	{
+		UPSPowerSphere* PowerSphereObject = PowerSphere.GetDefaultObject();
 		if (PowerSphereObject)
 		{
 			EAbilityType AbilitySlot = EAbilityType::None;
-			switch (PowerSphere.Key)
+			for (uint8 i = (uint8)EAbilityType::Ability1; i <= (uint8)EAbilityType::MAX; i++)
 			{
-			case EPowerSphereType::ActionMoveTo:
-				AbilitySlot = EAbilityType::ActionMoveTo;
-				break;
-			case EPowerSphereType::ActionEnemyUnit:
-				AbilitySlot = EAbilityType::ActionEnemyUnit;
-				break;
-			default:
-				for (uint8 i = (uint8)EAbilityType::Ability1; i <= (uint8)EAbilityType::MAX; i++)
+				if (AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.Num() == 0)
 				{
-					if (AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.Num() == 0)
+					AbilitySlot = (EAbilityType)i;
+					break;
+				}
+				else
+				{
+					if (AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.FindKey(PowerSphereObject->GameplayAbility))
 					{
 						AbilitySlot = (EAbilityType)i;
 						break;
 					}
-					else
-					{
-						APSUnit* const* TempUnit = AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.FindKey(PowerSphereObject->GameplayAbility);
-						if (TempUnit)
-						{
-							AbilitySlot = (EAbilityType)i;
-							break;
-						}
-					}
 				}
-				break;
 			}
 			AbilitiesMapping[AbilitySlot].UnitAbilityMap.Add(NewUnit, PowerSphereObject->GameplayAbility);
 		}
 	}
-}
-
-void APSSquad::RequestAbilitiesMapping()
-{
-	for (const TPair<EAbilityType, FAbilityMappingSet>& AbilityMappingSet : AbilitiesMapping)
-	{
-		PlayerOwner->ReceivedSquadAbilitiesMappingSetClient(this, AbilityMappingSet.Key, AbilityMappingSet.Value);
-	}
-}
-
-void APSSquad::ReceivedAbilitiesMappingSet(EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet)
-{
-	AbilitiesMapping[NewAbilityType] = NewAbilityMappingSet;
 }
 
 // Called every frame
@@ -344,9 +337,12 @@ void APSSquad::UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityP
 			AbilitiesMapping[AbilityType].UnitAbilityMap.GenerateKeyArray(UnitsArray);
 			for (APSUnit* Unit : UnitsArray)
 			{
-				CurrentAbilityParams = AbilityParams;
-				Unit->CurrentAbilityParams = AbilityParams;
-				Unit->UseAbility(AbilityType, bIsUserInput);
+				if (Unit)
+				{
+					CurrentAbilityParams = AbilityParams;
+					Unit->CurrentAbilityParams = AbilityParams;
+					Unit->UseAbility(AbilityType, bIsUserInput);
+				}
 			}
 		}
 	}
@@ -360,6 +356,8 @@ bool APSSquad::SquadDestroyed()
 
 void APSSquad::UnitDied(APSUnit* Unit)
 {
+	RemoveUnitFromAbilitiesMapping(Unit);
+
 	if (Unit == CaptainUnit)
 	{
 		CaptainUnit = nullptr;
@@ -375,9 +373,27 @@ void APSSquad::UnitDied(APSUnit* Unit)
 			i++;
 	}
 	if (UnitFound)
+	{
 		SpecialUnits.RemoveAt(i);
+		return;
+	}
 
 	BasicUnits.Remove(Unit);
+}
+
+void APSSquad::RemoveUnitFromAbilitiesMapping(APSUnit* Unit)
+{
+	TArray<EAbilityType> SlotsToRemove = TArray<EAbilityType>();
+	for (const TPair<EAbilityType, FAbilityMappingSet>& AbilitySet : AbilitiesMapping)
+	{
+		if (AbilitySet.Value.UnitAbilityMap.Find(Unit))
+			SlotsToRemove.Add(AbilitySet.Key);
+	}
+
+	for (EAbilityType SlotToRemove : SlotsToRemove)
+	{
+		AbilitiesMapping[SlotToRemove].UnitAbilityMap.Remove(Unit);
+	}
 }
 
 void APSSquad::TargetSquadDestroyed(APSSquad* TargetSquad)

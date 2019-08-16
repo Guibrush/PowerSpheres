@@ -81,14 +81,26 @@ struct POWERSPHERES_API FUnitComposition
 
 	FUnitComposition()
 		: UnitBlueprint(nullptr)
-		, PowerSpheres(TMap<EPowerSphereType, TSubclassOf<class UPSPowerSphere>>())
+		, MovementSlot(nullptr)
+		, WeaponSlot(nullptr)
+		, AbilitiesPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
+		, EffectsPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
 	{ }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TSubclassOf<class APSUnit> UnitBlueprint;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TMap<EPowerSphereType, TSubclassOf<class UPSPowerSphere>> PowerSpheres;
+	TSubclassOf<class UPSPowerSphere> MovementSlot;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TSubclassOf<class UPSPowerSphere> WeaponSlot;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TSubclassOf<class UPSPowerSphere>> AbilitiesPowerSpheres;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TSubclassOf<class UPSPowerSphere>> EffectsPowerSpheres;
 };
 
 UCLASS(BlueprintType)

@@ -92,20 +92,6 @@ public:
 	UFUNCTION()
 	void TargetSquadDestroyed(APSSquad* TargetSquad);
 
-	/** 
-	Function executed from the server's player controller who owns this squad. This function will iterate over
-	the abilities mapping calling a client function on the player controller to receive the data.
-	*/
-	UFUNCTION()
-	void RequestAbilitiesMapping();
-
-	/**
-	This function will be called only on the client's player controller who owns this squad. This function
-	will introduce the new entry in the client's map.
-	*/
-	UFUNCTION()
-	void ReceivedAbilitiesMappingSet(EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet);
-
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
 	int TotalUnitsNumber;
 
@@ -139,6 +125,10 @@ public:
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
 
+	/** 
+	This structure is too complex to replicate it to the client. We need to use another
+	data structure to replicate this information to the client.
+	*/
 	UPROPERTY(BlueprintReadOnly)
 	TMap<EAbilityType, FAbilityMappingSet> AbilitiesMapping;
 
@@ -153,6 +143,8 @@ private:
 
 	void InitAbilitiesMapping();
 
-	void AddUnitToAbilitiesMapping(FUnitComposition UnitComposition, APSUnit* NewUnit);
+	void ConstructAbilities(FUnitComposition UnitComposition, APSUnit* NewUnit);
+
+	void RemoveUnitFromAbilitiesMapping(APSUnit* Unit);
 
 };

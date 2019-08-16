@@ -176,12 +176,9 @@ void APSUnit::GivePowers(TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres)
 
 void APSUnit::GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability)
 {
-	if (AbilitySystem)
+	if (HasAuthority() && AbilitySystem && Ability)
 	{
-		if (HasAuthority() && Ability)
-		{
-			AbilitySystem->GiveAbility(FGameplayAbilitySpec(Ability.Get(), 1, 0));
-		}
+		AbilitySystem->GiveAbility(FGameplayAbilitySpec(Ability.Get(), 1, 0));
 	}
 }
 
