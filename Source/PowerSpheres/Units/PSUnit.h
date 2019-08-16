@@ -163,6 +163,9 @@ private:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
 	const class UAttributeSet* AttributeSet;
 
+	// Indicates whether the last time UseAbility was called was because user input or not.
+	bool bLastUserInput = false;
+
 	// Helper function to check when the game starts the initialization of the map components.
 	// It calls itself every tick if the PSPlayerController is not valid until is valid.
 	void CheckInitMapComponents();

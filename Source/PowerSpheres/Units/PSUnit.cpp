@@ -216,6 +216,8 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 			}
 		}
 	}
+
+	bLastUserInput = bIsUserInput;
 }
 
 void APSUnit::SetCurrentAbilityType(EAbilityType NewAbilityType)
@@ -279,7 +281,7 @@ void APSUnit::AbilityFinished(UPSGameplayAbility* Ability)
 			{
 				ResetCurrentAbility(true);
 			}
-			else
+			else if (bLastUserInput)
 			{
 				ResetCurrentAbility(false);
 			}
