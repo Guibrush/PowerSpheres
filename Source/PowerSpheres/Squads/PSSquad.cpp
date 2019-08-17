@@ -383,16 +383,9 @@ void APSSquad::UnitDied(APSUnit* Unit)
 
 void APSSquad::RemoveUnitFromAbilitiesMapping(APSUnit* Unit)
 {
-	TArray<EAbilityType> SlotsToRemove = TArray<EAbilityType>();
 	for (const TPair<EAbilityType, FAbilityMappingSet>& AbilitySet : AbilitiesMapping)
 	{
-		if (AbilitySet.Value.UnitAbilityMap.Find(Unit))
-			SlotsToRemove.Add(AbilitySet.Key);
-	}
-
-	for (EAbilityType SlotToRemove : SlotsToRemove)
-	{
-		AbilitiesMapping[SlotToRemove].UnitAbilityMap.Remove(Unit);
+		AbilitiesMapping[AbilitySet.Key].UnitAbilityMap.Remove(Unit);
 	}
 }
 

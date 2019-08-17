@@ -186,14 +186,14 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 {
 	if (HasAuthority() && Squad)
 	{
-		TSubclassOf<class UPSGameplayAbility> Ability = Squad->AbilitiesMapping[AbilityType].UnitAbilityMap[this];
+		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[AbilityType].UnitAbilityMap.Find(this);
 		if (AbilitySystem && Ability)
 		{
 			if (bIsUserInput)
 			{
 				if (CurrentAbilityType != EAbilityType::None)
 				{
-					UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
+					UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
 					AbilitySystem->CancelAbility(AbilityCDO);
 				}
 
@@ -212,7 +212,7 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 			}
 			else
 			{
-				AbilitySystem->TryActivateAbilityByClass(Ability.Get());
+				AbilitySystem->TryActivateAbilityByClass(Ability->Get());
 			}
 		}
 	}
@@ -256,9 +256,12 @@ void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
 	{
 		if (CurrentAbilityType != EAbilityType::None)
 		{
-			TSubclassOf<class UPSGameplayAbility> Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
-			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability.GetDefaultObject());
-			AbilitySystem->CancelAbility(AbilityCDO);
+			TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
+			if (Ability)
+			{
+				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
+				AbilitySystem->CancelAbility(AbilityCDO);
+			}
 		}
 
 		ResetCurrentAbility();
@@ -269,8 +272,8 @@ void APSUnit::AbilityFinished(UPSGameplayAbility* Ability)
 {
 	if (HasAuthority() && Squad && CurrentAbilityType != EAbilityType::None)
 	{
-		TSubclassOf<class UPSGameplayAbility> CurrentAbility = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
-		if (CurrentAbility == Ability->GetClass())
+		TSubclassOf<class UPSGameplayAbility>* CurrentAbility = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
+		if (CurrentAbility && *CurrentAbility == Ability->GetClass())
 		{
 			APSSquad* TargetSquad = Cast<APSSquad>(CurrentAbilityParams.Actor);
 			if (!TargetSquad)
