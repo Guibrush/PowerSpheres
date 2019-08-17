@@ -102,7 +102,7 @@ public:
 	FUnitComposition CaptainUnitComposition;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
-	FUnitComposition BasicUnitComposition;
+	FUnitComposition SquadUnitComposition;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
 	TArray<FUnitComposition> SpecialUnitsComposition;
@@ -146,5 +146,7 @@ private:
 	void ConstructAbilities(FUnitComposition UnitComposition, APSUnit* NewUnit);
 
 	void RemoveUnitFromAbilitiesMapping(APSUnit* Unit);
+
+	FUnitComposition MakeUnitComposition(FUnitComposition UniqueUnitComposition);
 
 };

@@ -84,7 +84,9 @@ struct POWERSPHERES_API FUnitComposition
 		, MovementSlot(nullptr)
 		, WeaponSlot(nullptr)
 		, AbilitiesPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
+		, bOverwriteSquadAbilities(false)
 		, EffectsPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
+		, bOverwriteSquadEffects(false)
 	{ }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
@@ -100,7 +102,13 @@ struct POWERSPHERES_API FUnitComposition
 	TArray<TSubclassOf<class UPSPowerSphere>> AbilitiesPowerSpheres;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bOverwriteSquadAbilities;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<class UPSPowerSphere>> EffectsPowerSpheres;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	bool bOverwriteSquadEffects;
 };
 
 UCLASS(BlueprintType)

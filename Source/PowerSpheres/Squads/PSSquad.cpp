@@ -45,14 +45,14 @@ void APSSquad::BeginPlay()
 
 			// We spawn the captain first.
 			SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-			CaptainUnit = SpawnUnit(CaptainUnitComposition, SpawnTransform);
+			CaptainUnit = SpawnUnit(MakeUnitComposition(CaptainUnitComposition), SpawnTransform);
 			UnitsSpawned++;
 
 			// Spawn the special units.
 			for (int i = 0; i < SpecialUnitsNumber; i++)
 			{
 				SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-				SpecialUnits.Add(FSpecialUnitMap(i, SpawnUnit(SpecialUnitsComposition[i], SpawnTransform)));
+				SpecialUnits.Add(FSpecialUnitMap(i, SpawnUnit(MakeUnitComposition(SpecialUnitsComposition[i]), SpawnTransform)));
 				UnitsSpawned++;
 			}
 
@@ -60,11 +60,29 @@ void APSSquad::BeginPlay()
 			for (int i = 0; i < (TotalUnitsNumber - SpecialUnitsNumber - 1); i++)
 			{
 				SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-				BasicUnits.Add(SpawnUnit(BasicUnitComposition, SpawnTransform));
+				BasicUnits.Add(SpawnUnit(SquadUnitComposition, SpawnTransform));
 				UnitsSpawned++;
 			}
 		}
 	}
+}
+
+FUnitComposition APSSquad::MakeUnitComposition(FUnitComposition UniqueUnitComposition)
+{
+	FUnitComposition UnitComp = FUnitComposition();
+	UnitComp.UnitBlueprint = UniqueUnitComposition.UnitBlueprint;
+	UnitComp.MovementSlot = UniqueUnitComposition.MovementSlot ? UniqueUnitComposition.MovementSlot : SquadUnitComposition.MovementSlot;
+	UnitComp.WeaponSlot = UniqueUnitComposition.WeaponSlot ? UniqueUnitComposition.WeaponSlot : SquadUnitComposition.WeaponSlot;
+
+	UnitComp.AbilitiesPowerSpheres = UniqueUnitComposition.AbilitiesPowerSpheres;
+	if (!UniqueUnitComposition.bOverwriteSquadAbilities)
+		UnitComp.AbilitiesPowerSpheres.Append(SquadUnitComposition.AbilitiesPowerSpheres);
+
+	UnitComp.EffectsPowerSpheres = UniqueUnitComposition.EffectsPowerSpheres;
+	if (!UniqueUnitComposition.bOverwriteSquadEffects)
+		UnitComp.EffectsPowerSpheres.Append(SquadUnitComposition.EffectsPowerSpheres);
+
+	return UnitComp;
 }
 
 APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform)
