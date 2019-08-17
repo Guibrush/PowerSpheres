@@ -23,6 +23,10 @@ void UPSGameplayAbility::EndAbility(const FGameplayAbilitySpecHandle Handle, con
 {
 	Super::EndAbility(Handle, ActorInfo, ActivationInfo, bReplicateEndAbility, bWasCancelled);
 
+	if (UnitOwner)
+	{
+		UnitOwner->AbilityFinished(this);
+	}
 }
 
 bool UPSGameplayAbility::IsAbilityActive() const

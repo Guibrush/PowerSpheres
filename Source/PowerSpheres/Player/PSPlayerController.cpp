@@ -271,36 +271,6 @@ void APSPlayerController::ZoomIn(float Val)
 	}
 }
 
-void APSPlayerController::RequestSquadAbilitiesMappingServer_Implementation(APSSquad* Squad)
-{
-	Squad->RequestAbilitiesMapping();
-}
-
-bool APSPlayerController::RequestSquadAbilitiesMappingServer_Validate(APSSquad* Squad)
-{
-	return true;
-}
-
-void APSPlayerController::ReceivedSquadAbilitiesMappingSetClient_Implementation(APSSquad* Squad, EAbilityType NewAbilityType, FAbilityMappingSet NewAbilityMappingSet)
-{
-	Squad->ReceivedAbilitiesMappingSet(NewAbilityType, NewAbilityMappingSet);
-}
-
-void APSPlayerController::RequestUnitAbilitiesServer_Implementation(APSUnit* Unit)
-{
-	Unit->RequestAbilities();
-}
-
-bool APSPlayerController::RequestUnitAbilitiesServer_Validate(APSUnit* Unit)
-{
-	return true;
-}
-
-void APSPlayerController::ReceivedUnitAbilityClient_Implementation(APSUnit* Unit, EAbilityType NewAbilityType, TSubclassOf<class UPSGameplayAbility> NewAbility)
-{
-	Unit->ReceivedAbility(NewAbilityType, NewAbility);
-}
-
 void APSPlayerController::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
