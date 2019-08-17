@@ -172,4 +172,6 @@ private:
 
 	void GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability);
 
+	void GiveEffect(TSubclassOf<class UGameplayEffect> Effect, float Level);
+
 };

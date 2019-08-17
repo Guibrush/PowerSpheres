@@ -120,8 +120,6 @@ void APSSquad::ConstructAbilities(FUnitComposition UnitComposition, APSUnit* New
 		{
 			AbilitiesMapping[EAbilityType::ActionMoveTo].UnitAbilityMap.Add(NewUnit, MovementPowerSphere->GameplayAbility);
 		}
-
-		PowerSpheres.Add(UnitComposition.MovementSlot);
 	}
 
 	if (UnitComposition.WeaponSlot)
@@ -131,10 +129,10 @@ void APSSquad::ConstructAbilities(FUnitComposition UnitComposition, APSUnit* New
 		{
 			AbilitiesMapping[EAbilityType::ActionEnemyUnit].UnitAbilityMap.Add(NewUnit, WeaponPowerSphere->GameplayAbility);
 		}
-
-		PowerSpheres.Add(UnitComposition.WeaponSlot);
 	}
 
+	PowerSpheres.Add(UnitComposition.MovementSlot);
+	PowerSpheres.Add(UnitComposition.WeaponSlot);
 	PowerSpheres.Append(UnitComposition.AbilitiesPowerSpheres);
 	PowerSpheres.Append(UnitComposition.EffectsPowerSpheres);
 

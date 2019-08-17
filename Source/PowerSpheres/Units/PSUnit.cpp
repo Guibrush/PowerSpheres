@@ -161,16 +161,19 @@ void APSUnit::GivePowers(TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres)
 		UPSPowerSphere* PowerSphereObject = PowerSphere.GetDefaultObject();
 		if (PowerSphereObject)
 		{
-			if (PowerSphereObject->GameplayEffect)
-			{
-
-			}
-
-			if (PowerSphereObject->GameplayAbility)
-			{
-				GiveAbility(PowerSphereObject->GameplayAbility);
-			}
+			GiveEffect(PowerSphereObject->GameplayEffect, 1.0f);
+			GiveAbility(PowerSphereObject->GameplayAbility);
 		}
+	}
+}
+
+void APSUnit::GiveEffect(TSubclassOf<class UGameplayEffect> Effect, float Level)
+{
+	if (HasAuthority() && AbilitySystem && Effect)
+	{
+		FGameplayEffectContextHandle EffectContext = AbilitySystem->MakeEffectContext();
+		UGameplayEffect* GameplayEffect = Effect->GetDefaultObject<UGameplayEffect>();
+		AbilitySystem->ApplyGameplayEffectToSelf(GameplayEffect, Level, EffectContext);
 	}
 }
 
