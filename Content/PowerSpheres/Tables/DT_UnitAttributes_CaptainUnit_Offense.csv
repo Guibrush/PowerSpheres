@@ -1,0 +1,8 @@
+,BaseValue,MinValue,MaxValue,DerivedAttributeInfo,bCanStack
+PSUnitAttributeSet.Health,200,0,200,,FALSE
+PSUnitAttributeSet.MaxHealth,200,0,200,,FALSE
+PSUnitAttributeSet.Movement,1.4,0,1.4,,FALSE
+PSUnitAttributeSet.Attack,30,0,30,,FALSE
+PSUnitAttributeSet.Defence,5,0,5,,FALSE
+PSUnitAttributeSet.ElementalDefence,7.5,0,7.5,,FALSE
+PSUnitAttributeSet.VisionRadius,2500,0,2500,,FALSE
