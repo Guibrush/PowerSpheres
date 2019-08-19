@@ -20,7 +20,7 @@ A lot of this will be better achieved by adding VFX, sound and other feedback to
 
 The damage received by an unit is the result of a very simple formula taking the Attack stat of the attacker and Defence stat of the receiver of the attack. It goes like this:
 
-```cpp
+```text
 Damage = max((Attack - Defence), 0)
 ```
 
