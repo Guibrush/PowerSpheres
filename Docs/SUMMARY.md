@@ -6,6 +6,6 @@
 
 ## Game Design <a id="game-design-1"></a>
 
-* [Units stats](game-design-1/units-stats.md)
 * [Combat](game-design-1/combat.md)
+* [Units stats](game-design-1/units-stats.md)
 

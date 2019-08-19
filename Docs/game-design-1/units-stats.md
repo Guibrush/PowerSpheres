@@ -6,7 +6,7 @@ description: List and description of the stats that each unit in the game posses
 
 ## User Story
 
-As a player I want to have stats to represent how strong and capable my units are in the battlefield by  having each stat represented by a number that I can improve equipping Power Spheres or by buffing my units on the battlefield.
+As a player I want to have stats to represent how strong and capable my units are in the battlefield by having each stat represented by a number that I can improve equipping Power Spheres or by buffing my units on the battlefield.
 
 ## Overview
 
