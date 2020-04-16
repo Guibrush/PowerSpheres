@@ -107,6 +107,7 @@ APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTr
 
 			NewUnit->Team = Team;
 			NewUnit->PlayerOwner = PlayerOwner;
+			NewUnit->Squad = this;
 			NewUnit->FinishSpawning(UnitTransform);
 
 			ConstructAbilities(UnitComposition, NewUnit);

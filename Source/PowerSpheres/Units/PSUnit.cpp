@@ -46,11 +46,6 @@ void APSUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (GetOwner())
-	{
-		Squad = Cast<APSSquad>(GetOwner());
-	}
-
 	if (AbilitySystem)
 	{
 		AbilitySystem->InitAbilityActorInfo(this, this);
