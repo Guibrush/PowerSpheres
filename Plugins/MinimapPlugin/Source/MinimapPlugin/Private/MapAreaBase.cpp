@@ -31,7 +31,7 @@ AMapAreaBase::AMapAreaBase()
 	AreaMapView->FixedRotation = FRotator::ZeroRotator;
 	AreaMapView->InheritedYawOffset = 0.0f;
 	AreaMapView->bSupportZooming = false;
-	AreaMapView->bVisible = false;
+	AreaMapView->SetVisibility(false);
 	AreaMapView->bSelectable = false;
 }
 

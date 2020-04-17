@@ -10,7 +10,7 @@
 	"DocsURL": "http://www.zkshao.com/downloads/JournMinimapUserGuide.pdf",
 	"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/content/ad08325742e24fb0836391bca25c72bb",
 	"SupportURL": "https://forums.unrealengine.com/showthread.php?138793",
-	"EngineVersion": "4.22.0",
+	"EngineVersion": "4.24.0",
 	"CanContainContent": true,
 	"Installed": true,
 	"Modules": [
