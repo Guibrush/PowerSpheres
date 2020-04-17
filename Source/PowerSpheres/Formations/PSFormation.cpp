@@ -21,8 +21,8 @@ void APSFormation::BeginPlay()
 	// Sort the array of scene component according to their distance to the (0, 0) of the actor.
 	FormationPositions.Sort([](const UPSFormationComponent& ComponentA, const UPSFormationComponent& ComponentB)
 		{
-			float DistanceA = FVector::DistSquared(FVector::ZeroVector, ComponentA.RelativeLocation);
-			float DistanceB = FVector::DistSquared(FVector::ZeroVector, ComponentB.RelativeLocation);
+			float DistanceA = FVector::DistSquared(FVector::ZeroVector, ComponentA.GetRelativeLocation());
+			float DistanceB = FVector::DistSquared(FVector::ZeroVector, ComponentB.GetRelativeLocation());
 			return DistanceA < DistanceB;
 		});
 }
