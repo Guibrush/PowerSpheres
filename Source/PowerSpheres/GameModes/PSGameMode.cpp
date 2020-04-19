@@ -17,11 +17,6 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-//	Teams.Empty();
-//
-//	Teams.Add(ETeamType::Team1, FPlayerControllersTeam());
-//	Teams.Add(ETeamType::Team2, FPlayerControllersTeam());
-//
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
 #endif
@@ -70,14 +65,12 @@ void APSGameMode::AssignPlayerTeam(AController* Controller)
 		if (PSPlayerState && PSPlayerState->Team > ETeamType::NoTeam)
 		{
 			PSController->Team = PSPlayerState->Team;
-			//Teams[PSPlayerState->Team].Team.Add(PSController);
 		}
 
 #if WITH_EDITOR
 		else
 		{
 			PSController->Team = CurrentTeam;
-			//Teams[CurrentTeam].Team.Add(PSController);
 
 			if (CurrentTeam == ETeamType::Team1)
 				CurrentTeam = ETeamType::Team2;
