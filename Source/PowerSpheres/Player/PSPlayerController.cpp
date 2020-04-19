@@ -12,6 +12,7 @@
 #include "AbilitySystemComponent.h"
 #include "EngineUtils.h"
 #include "MapFog.h"
+#include "PSStaticLibrary.h"
 
 APSPlayerController::APSPlayerController()
 {
@@ -70,55 +71,63 @@ void APSPlayerController::OnActionPressed()
 
 void APSPlayerController::OnActionReleased()
 {
-	if (SelectedSquads.Num() > 0)
+	UWorld* const World = GetWorld();
+	if (!World)
 	{
-		// Trace to see what is under the mouse cursor
-		FHitResult Hit;
-		GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+		return;
+	}
 
-		if (Hit.bBlockingHit)
+	if (SelectedSquads.Num() <= 0)
+	{
+		return;
+	}
+
+	// Trace to see what is under the mouse cursor
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+
+	if (Hit.bBlockingHit)
+	{
+		APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
+		if (PSUnit && !PSUnit->CoveredByFOW)
 		{
-			APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
-			if (PSUnit && !PSUnit->CoveredByFOW)
+			// Hit an unit.
+			FAbilityParams AbilityParams = FAbilityParams();
+			AbilityParams.Actor = PSUnit->Squad;
+			if (UPSStaticLibrary::AreEnemyTeams(PSUnit->Squad->Team, Team))
 			{
-				// Hit an unit.
-				FAbilityParams AbilityParams = FAbilityParams();
-				AbilityParams.Actor = PSUnit->Squad;
-				if (PSUnit->Squad->Team != Team)
+				// Hit enemy squad.
+				UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
+			}
+			else
+			{
+				// Hit friendly squad (doesn't matter the player owner for now).
+				UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
+			}
+		}
+		else
+		{
+			// Hit a place where we can try to move.
+			if (SelectedSquads.Num() > 1)
+			{
+				FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
+				Formation->SetActorLocation(Hit.ImpactPoint);
+				Formation->SetActorRotation(FormationRotation);
+				int i = 0;
+				for (APSSquad* Squad : SelectedSquads)
 				{
-					// Hit enemy squad.
-					UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
-				}
-				else
-				{
-					// Hit friendly squad (doesn't matter the player owner for now).
-					UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
+					FAbilityParams AbilityParams = FAbilityParams();
+					AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
+					AbilityParams.Rotation = Formation->GetActorRotation();
+					UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
+					i++;
 				}
 			}
 			else
 			{
-				// Hit a place where we can try to move.
-				if (SelectedSquads.Num() > 1)
-				{
-					FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
-					Formation->SetActorLocation(Hit.ImpactPoint);
-					Formation->SetActorRotation(FormationRotation);
-					int i = 0;
-					for (APSSquad* Squad : SelectedSquads)
-					{
-						FAbilityParams AbilityParams = FAbilityParams();
-						AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
-						AbilityParams.Rotation = Formation->GetActorRotation();
-						UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
-						i++;
-					}
-				}
-				else
-				{
-					FAbilityParams AbilityParams = FAbilityParams();
-					AbilityParams.Position = Hit.ImpactPoint;
-					UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
-				}
+				FAbilityParams AbilityParams = FAbilityParams();
+				AbilityParams.Position = Hit.ImpactPoint;
+				UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
 			}
 		}
 	}

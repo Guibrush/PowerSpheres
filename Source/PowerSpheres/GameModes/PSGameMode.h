@@ -8,18 +8,18 @@
 #include "Player/PSPlayerController.h"
 #include "PSGameMode.generated.h"
 
-USTRUCT()
-struct POWERSPHERES_API FPlayerControllersTeam
-{
-	GENERATED_USTRUCT_BODY()
-
-	FPlayerControllersTeam()
-		: Team(TArray<APSPlayerController*>())
-	{ }
-
-	UPROPERTY()
-	TArray<APSPlayerController*> Team;
-};
+//USTRUCT()
+//struct POWERSPHERES_API FPlayerControllersTeam
+//{
+//	GENERATED_USTRUCT_BODY()
+//
+//	FPlayerControllersTeam()
+//		: Team(TArray<APSPlayerController*>())
+//	{ }
+//
+//	UPROPERTY()
+//	TArray<APSPlayerController*> Team;
+//};
 
 UCLASS()
 class POWERSPHERES_API APSGameMode : public AGameMode
@@ -28,10 +28,10 @@ class POWERSPHERES_API APSGameMode : public AGameMode
 
 public:
 
-	APSGameMode();
+	APSGameMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
-	UPROPERTY()
-	TMap<ETeamType, FPlayerControllersTeam> Teams;
+	//UPROPERTY()
+	//TMap<ETeamType, FPlayerControllersTeam> Teams;
 
 	//~ Begin AGameModeBase Interface
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;

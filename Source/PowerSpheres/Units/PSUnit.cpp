@@ -16,9 +16,11 @@
 #include "Engine/World.h"
 #include "TimerManager.h"
 #include "PowerSpheres/PSPowerSphere.h"
+#include "PSStaticLibrary.h"
 
 // Sets default values
-APSUnit::APSUnit()
+APSUnit::APSUnit(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 	// Set size for player capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
@@ -84,23 +86,25 @@ void APSUnit::BeginPlay()
 void APSUnit::CheckInitMapComponents()
 {
 	UWorld* const World = GetWorld();
-	if (World)
+	if (!World)
 	{
-		APSPlayerController* PSController = Cast<APSPlayerController>(UGameplayStatics::GetPlayerController(World, 0));
-		if (PSController)
-		{
-			if (MapRevealer && PSController->Team != Team)
-			{
-				MapRevealer->DestroyComponent();
-			}
+		return;
+	}
 
-			InitMapComponents();
-		}
-		else
+	APSPlayerController* PSController = Cast<APSPlayerController>(UGameplayStatics::GetPlayerController(World, 0));
+	if (PSController)
+	{
+		if (MapRevealer && UPSStaticLibrary::AreEnemyTeams(PSController->Team, Team))
 		{
-			// Little hack to fix a unknown bug about not getting the proper PSPlayerController on BeginPlay.
-			World->GetTimerManager().SetTimerForNextTick(this, &APSUnit::CheckInitMapComponents);
+			MapRevealer->DestroyComponent();
 		}
+
+		InitMapComponents();
+	}
+	else
+	{
+		// Little hack to fix a unknown bug about not getting the proper PSPlayerController on BeginPlay.
+		World->GetTimerManager().SetTimerForNextTick(this, &APSUnit::CheckInitMapComponents);
 	}
 }
 

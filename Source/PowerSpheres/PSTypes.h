@@ -30,9 +30,11 @@ UENUM(BlueprintType)
 enum class ETeamType : uint8
 {
 	NoTeam = 0,
-	Team1 = 1,
-	Team2 = 2,
-	Team3 = 3,
+	AI = 1,
+	Team1 = 2,
+	Team2 = 3,
+	Team3 = 4,
+	Team4 = 5,
 	Neutral,
 };
 

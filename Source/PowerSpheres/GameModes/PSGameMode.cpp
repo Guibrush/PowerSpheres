@@ -5,8 +5,10 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PSPlayerState.h"
+#include "PSGameState.h"
 
-APSGameMode::APSGameMode()
+APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
@@ -15,11 +17,11 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	Teams.Empty();
-
-	Teams.Add(ETeamType::Team1, FPlayerControllersTeam());
-	Teams.Add(ETeamType::Team2, FPlayerControllersTeam());
-
+//	Teams.Empty();
+//
+//	Teams.Add(ETeamType::Team1, FPlayerControllersTeam());
+//	Teams.Add(ETeamType::Team2, FPlayerControllersTeam());
+//
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
 #endif
@@ -64,17 +66,18 @@ void APSGameMode::AssignPlayerTeam(AController* Controller)
 {
 	if (APSPlayerController * PSController = Cast<APSPlayerController>(Controller))
 	{
-		APSPlayerState* PlayerState = Cast<APSPlayerState>(Controller->PlayerState);
-		if (PlayerState && PlayerState->Team > ETeamType::NoTeam)
+		APSPlayerState* PSPlayerState = Cast<APSPlayerState>(Controller->PlayerState);
+		if (PSPlayerState && PSPlayerState->Team > ETeamType::NoTeam)
 		{
-			PSController->Team = PlayerState->Team;
-			Teams[PlayerState->Team].Team.Add(PSController);
+			PSController->Team = PSPlayerState->Team;
+			//Teams[PSPlayerState->Team].Team.Add(PSController);
 		}
+
 #if WITH_EDITOR
 		else
 		{
 			PSController->Team = CurrentTeam;
-			Teams[CurrentTeam].Team.Add(PSController);
+			//Teams[CurrentTeam].Team.Add(PSController);
 
 			if (CurrentTeam == ETeamType::Team1)
 				CurrentTeam = ETeamType::Team2;
