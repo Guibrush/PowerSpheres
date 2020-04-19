@@ -5,6 +5,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PSPlayerState.h"
+#include "Player/PSPlayerStart.h"
 #include "PSGameState.h"
 
 APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
@@ -55,6 +56,51 @@ void APSGameMode::RestartPlayer(AController* NewPlayer)
 	Super::RestartPlayer(NewPlayer);
 
 	SpawnPlayerArmy(NewPlayer);
+}
+
+void APSGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+#if WITH_EDITOR
+	UWorld* const World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	APSPlayerStart* EnemyPlayerStart = nullptr;
+	TArray<AActor*> FoundPlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APSPlayerStart::StaticClass(), FoundPlayerStarts);
+	for (AActor* PlayerStart : FoundPlayerStarts)
+	{
+		APSPlayerStart* PSPlayerStart = Cast<APSPlayerStart>(PlayerStart);
+		if (PSPlayerStart && PSPlayerStart->Team == ETeamType::AI)
+		{
+			EnemyPlayerStart = PSPlayerStart;
+			break;
+		}
+	}
+
+	if (!EnemyPlayerStart)
+	{
+		return;
+	}
+
+	FVector StartLocation = EnemyPlayerStart->GetActorLocation();
+	FRotator StartRotation = EnemyPlayerStart->GetActorRotation();
+	for (TSubclassOf<APSSquad> EnemySquadBlueprint : EnemySquadsToPIE)
+	{
+		FTransform StartTransform = FTransform(StartRotation, StartLocation);
+		APSSquad* NewSquad = World->SpawnActorDeferred<APSSquad>(EnemySquadBlueprint, StartTransform, GetOwner());
+		if (NewSquad)
+		{
+			NewSquad->Team = ETeamType::AI;
+			NewSquad->PlayerOwner = nullptr;
+			NewSquad->FinishSpawning(StartTransform);
+		}
+	}
+#endif
 }
 
 void APSGameMode::AssignPlayerTeam(AController* Controller)

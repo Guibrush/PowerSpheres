@@ -24,7 +24,14 @@ public:
 	//virtual void PostLogin(APlayerController* NewPlayer) override;
 	//virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
+	virtual void HandleMatchHasStarted() override;
 	//~ End AGameModeBase Interface
+
+#if WITH_EDITOR
+	/** Enemy Squads blueprints that are going to be spawned on PIE. WARNING: ONLY FOR TESTING PURPOSES. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TSubclassOf<APSSquad>> EnemySquadsToPIE;
+#endif
 
 private:
 #if WITH_EDITOR
