@@ -6,7 +6,10 @@
 #include "GameFramework/GameMode.h"
 #include "PSTypes.h"
 #include "Player/PSPlayerController.h"
+
 #include "PSGameMode.generated.h"
+
+class UPSPowerSphereCrateSpawnerManager;
 
 UCLASS()
 class POWERSPHERES_API APSGameMode : public AGameMode
@@ -37,7 +40,10 @@ private:
 #if WITH_EDITOR
 	ETeamType CurrentTeam;
 #endif
-
 	void AssignPlayerTeam(AController* Controller);
 	void SpawnPlayerArmy(AController* Controller);
+
+	// TODO: create exposed reference TSubclassOf<UPSPowerSphereCrateSpawnerManager>
+	TWeakObjectPtr<UPSPowerSphereCrateSpawnerManager> PowerSphereCrateSpawnerManager;
+
 };

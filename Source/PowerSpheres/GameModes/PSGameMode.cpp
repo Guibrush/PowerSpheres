@@ -6,6 +6,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/PSPlayerState.h"
 #include "Player/PSPlayerStart.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawnerManager.h"
 #include "PSGameState.h"
 
 APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +18,9 @@ APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
 void APSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	// TODO: This shall be singleton access
+	PowerSphereCrateSpawnerManager = NewObject<UPSPowerSphereCrateSpawnerManager>();
 
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
