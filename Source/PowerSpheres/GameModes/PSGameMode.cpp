@@ -7,6 +7,7 @@
 #include "Player/PSPlayerState.h"
 #include "Player/PSPlayerStart.h"
 #include "PowerSpheres/PSPowerSphereCrateSpawnerManager.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawner.h"
 #include "PSGameState.h"
 
 APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
@@ -105,6 +106,18 @@ void APSGameMode::HandleMatchHasStarted()
 		}
 	}
 #endif
+}
+
+
+void APSGameMode::StartPlay()
+{
+	Super::StartPlay();
+	if (!PowerSphereCrateSpawnerManager.IsValid()) { return; }
+	for (APSPowerSphereCrateSpawner* Spawner : PowerSphereCrateSpawnerManager->GetCrateSpawners())
+	{
+		if(!Spawner) { continue; }
+		Spawner->TryToSpawnCrate();
+	}
 }
 
 void APSGameMode::AssignPlayerTeam(AController* Controller)

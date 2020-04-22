@@ -28,6 +28,7 @@ public:
 	//virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void StartPlay() override;
 	//~ End AGameModeBase Interface
 
 #if WITH_EDITOR
