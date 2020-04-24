@@ -365,6 +365,20 @@ void APSSquad::UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityP
 	}
 }
 
+void APSSquad::CancelCurrentSquadAbility()
+{
+	if (HasAuthority())
+	{
+		TArray<APSUnit*> Units = GetAllUnits();
+		for (APSUnit* Unit : Units)
+		{
+			Unit->CancelCurrentAbility();
+		}
+
+		CurrentAbilityParams = FAbilityParams();
+	}
+}
+
 bool APSSquad::SquadDestroyed()
 {
 	TArray<APSUnit*> Units = GetAllUnits();

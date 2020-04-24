@@ -74,8 +74,11 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void SquadDeselectedClient();
 
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 	void UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityParams, bool bIsUserInput);
+
+	UFUNCTION(BlueprintCallable)
+	void CancelCurrentSquadAbility();
 
 	/** Whether all the units of this squad had been killed or not. */
 	UFUNCTION(BlueprintCallable)

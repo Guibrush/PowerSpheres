@@ -59,6 +59,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);
 
+	UFUNCTION(BlueprintCallable)
+	void CancelCurrentAbility();
+
 	UFUNCTION()
 	void Die(APSUnit* Attacker);
 

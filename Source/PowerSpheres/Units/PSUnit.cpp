@@ -222,6 +222,26 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 	bLastUserInput = bIsUserInput;
 }
 
+void APSUnit::CancelCurrentAbility()
+{
+	if (CurrentAbilityType != EAbilityType::None)
+	{
+		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
+		if (Ability)
+		{
+			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
+			AbilitySystem->CancelAbility(AbilityCDO);
+		}
+
+		if (GetController())
+		{
+			GetController()->StopMovement();
+		}
+	}
+
+	ResetCurrentAbility();
+}
+
 void APSUnit::SetCurrentAbilityType(EAbilityType NewAbilityType)
 {
 	CurrentAbilityType = NewAbilityType;
@@ -256,17 +276,7 @@ void APSUnit::TargetSquadDestroyed(APSSquad* TargetSquad)
 {
 	if (HasAuthority() && Squad && TargetSquad && TargetSquad == CurrentAbilityParams.Actor)
 	{
-		if (CurrentAbilityType != EAbilityType::None)
-		{
-			TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
-			if (Ability)
-			{
-				UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
-				AbilitySystem->CancelAbility(AbilityCDO);
-			}
-		}
-
-		ResetCurrentAbility();
+		CancelCurrentAbility();
 	}
 }
 
