@@ -5,8 +5,13 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Kismet/GameplayStatics.h"
 #include "Player/PSPlayerState.h"
+#include "Player/PSPlayerStart.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawnerManager.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawner.h"
+#include "PSGameState.h"
 
-APSGameMode::APSGameMode()
+APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
+	: Super(ObjectInitializer)
 {
 
 }
@@ -15,10 +20,16 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	Teams.Empty();
-
-	Teams.Add(ETeamType::Team1, FPlayerControllersTeam());
-	Teams.Add(ETeamType::Team2, FPlayerControllersTeam());
+	UWorld* const World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	FActorSpawnParameters ActorSpawnParameters;
+	PowerSphereCrateSpawnerManager = World->SpawnActor<APSPowerSphereCrateSpawnerManager>(
+		PowerSphereCrateSpawnerManagerClass,
+		ActorSpawnParameters
+		);
 
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
@@ -60,21 +71,73 @@ void APSGameMode::RestartPlayer(AController* NewPlayer)
 	SpawnPlayerArmy(NewPlayer);
 }
 
+void APSGameMode::HandleMatchHasStarted()
+{
+	Super::HandleMatchHasStarted();
+
+#if WITH_EDITOR
+	UWorld* const World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+
+	APSPlayerStart* EnemyPlayerStart = nullptr;
+	TArray<AActor*> FoundPlayerStarts;
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APSPlayerStart::StaticClass(), FoundPlayerStarts);
+	for (AActor* PlayerStart : FoundPlayerStarts)
+	{
+		APSPlayerStart* PSPlayerStart = Cast<APSPlayerStart>(PlayerStart);
+		if (PSPlayerStart && PSPlayerStart->Team == ETeamType::AI)
+		{
+			EnemyPlayerStart = PSPlayerStart;
+			break;
+		}
+	}
+
+	if (!EnemyPlayerStart)
+	{
+		return;
+	}
+
+	FVector StartLocation = EnemyPlayerStart->GetActorLocation();
+	FRotator StartRotation = EnemyPlayerStart->GetActorRotation();
+	for (TSubclassOf<APSSquad> EnemySquadBlueprint : EnemySquadsToPIE)
+	{
+		FTransform StartTransform = FTransform(StartRotation, StartLocation);
+		APSSquad* NewSquad = World->SpawnActorDeferred<APSSquad>(EnemySquadBlueprint, StartTransform, GetOwner());
+		if (NewSquad)
+		{
+			NewSquad->Team = ETeamType::AI;
+			NewSquad->PlayerOwner = nullptr;
+			NewSquad->FinishSpawning(StartTransform);
+		}
+	}
+#endif
+}
+
+
+void APSGameMode::StartPlay()
+{
+	Super::StartPlay();
+	if (!PowerSphereCrateSpawnerManager) { return; }
+	PowerSphereCrateSpawnerManager->StartSpawning();
+}
+
 void APSGameMode::AssignPlayerTeam(AController* Controller)
 {
 	if (APSPlayerController * PSController = Cast<APSPlayerController>(Controller))
 	{
-		APSPlayerState* PlayerState = Cast<APSPlayerState>(Controller->PlayerState);
-		if (PlayerState && PlayerState->Team > ETeamType::NoTeam)
+		APSPlayerState* PSPlayerState = Cast<APSPlayerState>(Controller->PlayerState);
+		if (PSPlayerState && PSPlayerState->Team > ETeamType::NoTeam)
 		{
-			PSController->Team = PlayerState->Team;
-			Teams[PlayerState->Team].Team.Add(PSController);
+			PSController->Team = PSPlayerState->Team;
 		}
+
 #if WITH_EDITOR
 		else
 		{
 			PSController->Team = CurrentTeam;
-			Teams[CurrentTeam].Team.Add(PSController);
 
 			if (CurrentTeam == ETeamType::Team1)
 				CurrentTeam = ETeamType::Team2;

@@ -6,20 +6,10 @@
 #include "GameFramework/GameMode.h"
 #include "PSTypes.h"
 #include "Player/PSPlayerController.h"
+
 #include "PSGameMode.generated.h"
 
-USTRUCT()
-struct POWERSPHERES_API FPlayerControllersTeam
-{
-	GENERATED_USTRUCT_BODY()
-
-	FPlayerControllersTeam()
-		: Team(TArray<APSPlayerController*>())
-	{ }
-
-	UPROPERTY()
-	TArray<APSPlayerController*> Team;
-};
+class APSPowerSphereCrateSpawnerManager;
 
 UCLASS()
 class POWERSPHERES_API APSGameMode : public AGameMode
@@ -28,10 +18,7 @@ class POWERSPHERES_API APSGameMode : public AGameMode
 
 public:
 
-	APSGameMode();
-
-	UPROPERTY()
-	TMap<ETeamType, FPlayerControllersTeam> Teams;
+	APSGameMode(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	//~ Begin AGameModeBase Interface
 	virtual void InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage) override;
@@ -40,13 +27,31 @@ public:
 	//virtual void PostLogin(APlayerController* NewPlayer) override;
 	//virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
+	virtual void HandleMatchHasStarted() override;
+	virtual void StartPlay() override;
 	//~ End AGameModeBase Interface
+
+#if WITH_EDITOR
+	/** Enemy Squads blueprints that are going to be spawned on PIE. WARNING: ONLY FOR TESTING PURPOSES. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	TArray<TSubclassOf<APSSquad>> EnemySquadsToPIE;
+#endif
+		
+	UPROPERTY(EditDefaultsOnly, Category = "PowerSphereCrate")
+	TSubclassOf<APSPowerSphereCrateSpawnerManager> PowerSphereCrateSpawnerManagerClass;
+
 
 private:
 #if WITH_EDITOR
 	ETeamType CurrentTeam;
 #endif
-
 	void AssignPlayerTeam(AController* Controller);
 	void SpawnPlayerArmy(AController* Controller);
+
+	APSPowerSphereCrateSpawnerManager* PowerSphereCrateSpawnerManager;
+
+	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
+	APSPowerSphereCrateSpawnerManager* GetPowerSphereCrateSpawnerManager() const { return PowerSphereCrateSpawnerManager; }
+	
+
 };

@@ -18,7 +18,7 @@ class POWERSPHERES_API APSUnit : public ACharacter, public IAbilitySystemInterfa
 
 public:
 	// Sets default values for this character's properties
-	APSUnit();
+	APSUnit(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
