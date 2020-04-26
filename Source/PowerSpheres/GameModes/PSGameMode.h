@@ -6,7 +6,10 @@
 #include "GameFramework/GameMode.h"
 #include "PSTypes.h"
 #include "Player/PSPlayerController.h"
+
 #include "PSGameMode.generated.h"
+
+class APSPowerSphereCrateSpawnerManager;
 
 UCLASS()
 class POWERSPHERES_API APSGameMode : public AGameMode
@@ -25,6 +28,7 @@ public:
 	//virtual void HandleSeamlessTravelPlayer(AController*& C) override;
 	virtual void RestartPlayer(AController* NewPlayer) override;
 	virtual void HandleMatchHasStarted() override;
+	virtual void StartPlay() override;
 	//~ End AGameModeBase Interface
 
 #if WITH_EDITOR
@@ -32,12 +36,22 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<APSSquad>> EnemySquadsToPIE;
 #endif
+		
+	UPROPERTY(EditDefaultsOnly, Category = "PowerSphereCrate")
+	TSubclassOf<APSPowerSphereCrateSpawnerManager> PowerSphereCrateSpawnerManagerClass;
+
 
 private:
 #if WITH_EDITOR
 	ETeamType CurrentTeam;
 #endif
-
 	void AssignPlayerTeam(AController* Controller);
 	void SpawnPlayerArmy(AController* Controller);
+
+	APSPowerSphereCrateSpawnerManager* PowerSphereCrateSpawnerManager;
+
+	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
+	APSPowerSphereCrateSpawnerManager* GetPowerSphereCrateSpawnerManager() const { return PowerSphereCrateSpawnerManager; }
+	
+
 };
