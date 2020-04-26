@@ -6,6 +6,8 @@
 #include "Kismet/GameplayStatics.h"
 #include "Player/PSPlayerState.h"
 #include "Player/PSPlayerStart.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawnerManager.h"
+#include "PowerSpheres/PSPowerSphereCrateSpawner.h"
 #include "PSGameState.h"
 
 APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
@@ -17,6 +19,17 @@ APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
 void APSGameMode::InitGame(const FString& MapName, const FString& Options, FString& ErrorMessage)
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
+
+	UWorld* const World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	FActorSpawnParameters ActorSpawnParameters;
+	PowerSphereCrateSpawnerManager = World->SpawnActor<APSPowerSphereCrateSpawnerManager>(
+		PowerSphereCrateSpawnerManagerClass,
+		ActorSpawnParameters
+		);
 
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
@@ -101,6 +114,14 @@ void APSGameMode::HandleMatchHasStarted()
 		}
 	}
 #endif
+}
+
+
+void APSGameMode::StartPlay()
+{
+	Super::StartPlay();
+	if (!PowerSphereCrateSpawnerManager) { return; }
+	PowerSphereCrateSpawnerManager->StartSpawning();
 }
 
 void APSGameMode::AssignPlayerTeam(AController* Controller)
