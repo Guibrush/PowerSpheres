@@ -33,6 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
 	void RegisterCrateSpawner(const APSPowerSphereCrateSpawner* CrateSpawner);
 
-	void StartSpawning() const;
+	void StartSpawning();
 
 };
