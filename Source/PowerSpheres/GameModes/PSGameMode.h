@@ -9,7 +9,7 @@
 
 #include "PSGameMode.generated.h"
 
-class UPSPowerSphereCrateSpawnerManager;
+class APSPowerSphereCrateSpawnerManager;
 
 UCLASS()
 class POWERSPHERES_API APSGameMode : public AGameMode
@@ -36,6 +36,10 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	TArray<TSubclassOf<APSSquad>> EnemySquadsToPIE;
 #endif
+		
+	UPROPERTY(EditDefaultsOnly, Category = "PowerSphereCrate")
+	TSubclassOf<APSPowerSphereCrateSpawnerManager> PowerSphereCrateSpawnerManagerClass;
+
 
 private:
 #if WITH_EDITOR
@@ -44,7 +48,10 @@ private:
 	void AssignPlayerTeam(AController* Controller);
 	void SpawnPlayerArmy(AController* Controller);
 
-	// TODO: create exposed reference TSubclassOf<UPSPowerSphereCrateSpawnerManager>
-	TWeakObjectPtr<UPSPowerSphereCrateSpawnerManager> PowerSphereCrateSpawnerManager;
+	APSPowerSphereCrateSpawnerManager* PowerSphereCrateSpawnerManager;
+
+	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
+	APSPowerSphereCrateSpawnerManager* GetPowerSphereCrateSpawnerManager() const { return PowerSphereCrateSpawnerManager; }
+	
 
 };

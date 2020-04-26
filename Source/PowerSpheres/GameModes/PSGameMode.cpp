@@ -20,8 +20,16 @@ void APSGameMode::InitGame(const FString& MapName, const FString& Options, FStri
 {
 	Super::InitGame(MapName, Options, ErrorMessage);
 
-	// TODO: This shall be singleton access
-	PowerSphereCrateSpawnerManager = NewObject<UPSPowerSphereCrateSpawnerManager>();
+	UWorld* const World = GetWorld();
+	if (!World)
+	{
+		return;
+	}
+	FActorSpawnParameters ActorSpawnParameters;
+	PowerSphereCrateSpawnerManager = World->SpawnActor<APSPowerSphereCrateSpawnerManager>(
+		PowerSphereCrateSpawnerManagerClass,
+		ActorSpawnParameters
+		);
 
 #if WITH_EDITOR
 	CurrentTeam = ETeamType::Team1;
@@ -112,12 +120,8 @@ void APSGameMode::HandleMatchHasStarted()
 void APSGameMode::StartPlay()
 {
 	Super::StartPlay();
-	if (!PowerSphereCrateSpawnerManager.IsValid()) { return; }
-	for (APSPowerSphereCrateSpawner* Spawner : PowerSphereCrateSpawnerManager->GetCrateSpawners())
-	{
-		if(!Spawner) { continue; }
-		Spawner->TryToSpawnCrate();
-	}
+	if (!PowerSphereCrateSpawnerManager) { return; }
+	PowerSphereCrateSpawnerManager->StartSpawning();
 }
 
 void APSGameMode::AssignPlayerTeam(AController* Controller)

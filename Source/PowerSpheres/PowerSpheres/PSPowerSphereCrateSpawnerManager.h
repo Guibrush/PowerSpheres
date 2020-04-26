@@ -8,16 +8,31 @@
 
 class APSPowerSphereCrateSpawner;
 
+// TODO: This shall be SINGLETON
 UCLASS()
-class POWERSPHERES_API UPSPowerSphereCrateSpawnerManager : public UObject
+class POWERSPHERES_API APSPowerSphereCrateSpawnerManager : public AActor
 {
 	GENERATED_BODY()
-	// TODO: This shall be SINGLETON
 
 private:
-	UPROPERTY()
-	TArray<APSPowerSphereCrateSpawner*> CrateSpawners;
+	
+	TArray<const APSPowerSphereCrateSpawner*> CrateSpawners;
 
 public:
-	TArray<APSPowerSphereCrateSpawner*> GetCrateSpawners() const { return CrateSpawners; }
+	
+	APSPowerSphereCrateSpawnerManager();
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "PowerSphereCrate")
+	int32 MaxCrates = 0;
+
+	UPROPERTY(BlueprintReadWrite, Category = "PowerSphereCrate")
+	int32 CurrentCrates = 0;
+
+	TArray<const APSPowerSphereCrateSpawner*> GetCrateSpawners() const { return CrateSpawners; }
+
+	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
+	void RegisterCrateSpawner(const APSPowerSphereCrateSpawner* CrateSpawner);
+
+	void StartSpawning() const;
+
 };
