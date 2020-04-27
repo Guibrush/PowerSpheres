@@ -127,6 +127,7 @@ public:
 		, ShootAnim(nullptr)
 		, ShootIdleAnim(nullptr)
 		, ReloadAnim(nullptr)
+		, DieAnim(nullptr)
 		, AbilityWeapon(nullptr)
 	{ }
 
@@ -147,6 +148,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAnimSequenceBase* ReloadAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* DieAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMesh* AbilityWeapon;
