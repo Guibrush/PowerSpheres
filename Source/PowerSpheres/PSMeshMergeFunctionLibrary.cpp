@@ -96,6 +96,11 @@ USkeletalMesh* UPSMeshMergeFunctionLibrary::MergeMeshes(const FPSSkeletalMeshMer
 		BaseMesh->Skeleton = Params.Skeleton;
 	}
 
+	if (Params.PhysicsAsset)
+	{
+		BaseMesh->PhysicsAsset = Params.PhysicsAsset;
+	}
+
 	if (bRunDuplicateCheck)
 	{
 		TArray<FName> SkelMeshSockets;
