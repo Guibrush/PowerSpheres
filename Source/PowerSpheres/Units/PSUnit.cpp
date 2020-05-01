@@ -268,6 +268,14 @@ void APSUnit::DieMulticast_Implementation(APSUnit* Attacker)
 	UnitDiedEvent(Attacker);
 }
 
+void APSUnit::UnitDamaged(APSUnit* Attacker, FGameplayCueParameters Params)
+{
+	if (Squad)
+	{
+		Squad->SquadDamagedEvent(this, Attacker, Params);
+	}
+}
+
 void APSUnit::TargetDied(APSUnit* Target)
 {
 	if (HasAuthority() && Squad && Target)

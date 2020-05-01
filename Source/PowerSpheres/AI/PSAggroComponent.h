@@ -50,23 +50,24 @@ public:
 	TArray<FAggroPawnTimer> AggroPawns;
 
 	/** Aggro decrease rate per second. */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float AggroDecreaseRate = 1.0f;
 
 	/** Aggro increase rate per action (getting damage, seeing the enemy, etc). */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float AggroIncreaseRate = 2.0f;
 
 	/** Time (in seconds) for a pawn to disappear from the aggro list when reaches zero aggro. */
-	UPROPERTY(BlueprintReadWrite)
+	UPROPERTY(BlueprintReadWrite, EditAnywhere)
 	float TimeOutAtZeroAggro = 2.0f;
 
 	/**
-		Inserts a new aggro pawn with the base aggro increase rate. If the pawn already exists it
-		resets the aggro to the base amount only if its lower than the base amount.
+		Inserts a new aggro pawn with the base aggro increase rate multiplied by the BaseAggroFactor parameter.
+		If the pawn already exists it resets the aggro to the base amount previously calculated only if its lower 
+		than that value.
 	*/
 	UFUNCTION(BlueprintCallable)
-	void NewAggroPawn(APawn* AggroPawn);
+	void NewAggroPawn(APawn* AggroPawn, float BaseAggroFactor=1.0f);
 
 	/**
 		Increases the aggro for a given pawn by the rate setted in the component multiplied by an optional factor.

@@ -72,6 +72,9 @@ public:
 	void UnitDiedEvent(APSUnit* Attacker);
 
 	UFUNCTION()
+	void UnitDamaged(APSUnit* Attacker, FGameplayCueParameters Params);
+
+	UFUNCTION()
 	void TargetDied(APSUnit* Target);
 
 	UFUNCTION()

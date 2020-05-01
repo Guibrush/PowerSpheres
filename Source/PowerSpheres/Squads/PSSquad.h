@@ -84,6 +84,10 @@ public:
 	UFUNCTION(BlueprintCallable)
 	bool SquadDestroyed();
 
+	/** Blueprint event for when an unit of this squad has been damaged. */
+	UFUNCTION(BlueprintImplementableEvent)
+	void SquadDamagedEvent(APSUnit* Unit, APSUnit* Attacker, FGameplayCueParameters Params);
+
 	/** Gets all the units in this squad in a single array. */
 	UFUNCTION(BlueprintPure)
 	TArray<APSUnit*> GetAllUnits();
