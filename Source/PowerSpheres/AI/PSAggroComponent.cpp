@@ -75,20 +75,21 @@ void UPSAggroComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	}
 }
 
-void UPSAggroComponent::NewAggroPawn(APawn* AggroPawn)
+void UPSAggroComponent::NewAggroPawn(APawn* AggroPawn, float BaseAggroFactor)
 {
 	FAggroPawnTimer NewAggroPawn = FAggroPawnTimer();
 	NewAggroPawn.AggroPawn = AggroPawn;
+	float BaseAggro = AggroIncreaseRate * BaseAggroFactor;
 
 	int32 PawnIndex = AggroPawns.Find(NewAggroPawn);
 	if (PawnIndex == INDEX_NONE)
 	{
-		NewAggroPawn.CurrentAggro = AggroIncreaseRate;
+		NewAggroPawn.CurrentAggro = BaseAggro;
 		AggroPawns.Add(NewAggroPawn);
 	}
 	else
 	{
-		AggroPawns[PawnIndex].CurrentAggro = FMath::Max(AggroIncreaseRate, AggroPawns[PawnIndex].CurrentAggro);
+		AggroPawns[PawnIndex].CurrentAggro = FMath::Max(BaseAggro, AggroPawns[PawnIndex].CurrentAggro);
 	}
 }
 

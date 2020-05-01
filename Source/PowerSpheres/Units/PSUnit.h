@@ -65,6 +65,15 @@ public:
 	UFUNCTION()
 	void Die(APSUnit* Attacker);
 
+	UFUNCTION(NetMulticast, Reliable)
+	void DieMulticast(APSUnit* Attacker);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnitDiedEvent(APSUnit* Attacker);
+
+	UFUNCTION()
+	void UnitDamaged(APSUnit* Attacker, FGameplayCueParameters Params);
+
 	UFUNCTION()
 	void TargetDied(APSUnit* Target);
 
@@ -88,7 +97,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UnitEnteredFOW();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	bool IsAlive();
 
 	UFUNCTION(BlueprintCallable)

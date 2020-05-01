@@ -89,7 +89,7 @@ void APSPlayerController::OnActionReleased()
 	if (Hit.bBlockingHit)
 	{
 		APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
-		if (PSUnit && !PSUnit->CoveredByFOW)
+		if (PSUnit && !PSUnit->CoveredByFOW && PSUnit->IsAlive())
 		{
 			// Hit an unit.
 			FAbilityParams AbilityParams = FAbilityParams();
@@ -177,7 +177,7 @@ void APSPlayerController::OnSelectReleased()
 		if (Hit.IsValidBlockingHit() && Hit.GetActor())
 		{
 			APSUnit* UnitHit = Cast<APSUnit>(Hit.GetActor());
-			if (UnitHit && UnitHit->Squad)
+			if (UnitHit && UnitHit->Squad && UnitHit->IsAlive())
 			{
 				if (UnitHit->Team == Team && UnitHit->PlayerOwner == this)
 				{

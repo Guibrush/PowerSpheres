@@ -87,22 +87,23 @@ void UPSUnitAttributeSet::PostGameplayEffectExecute(const struct FGameplayEffect
 		float FinalHealth = FMath::Clamp(Health.GetBaseValue(), 0.0f, MaxHealth.GetBaseValue());
 		Health.SetBaseValue(FinalHealth);
 		Health.SetCurrentValue(FinalHealth);
-		if (FinalHealth <= 0)
+
+		APSUnit* DamagedUnit = Cast<APSUnit>(DamagedActor);
+		APSUnit* AttackingUnit = Cast<APSUnit>(AttackingActor);
+		if (DamagedUnit && AttackingUnit)
 		{
+			// Construct a gameplay cue event for this death
+			FGameplayCueParameters Params(Data.EffectSpec.GetContext());
+			Params.RawMagnitude = Data.EvaluatedData.Magnitude;
+			Params.NormalizedMagnitude = FMath::Abs(Data.EvaluatedData.Magnitude / MaxHealth.GetBaseValue());
+			//Params.AggregatedSourceTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
+			//Params.AggregatedTargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
+
+			DamagedUnit->UnitDamaged(AttackingUnit, Params);
+
 			// Handle death.
-			APSUnit* DamagedUnit = Cast<APSUnit>(DamagedActor);
-			APSUnit* AttackingUnit = Cast<APSUnit>(AttackingActor);
-			if (DamagedUnit && AttackingUnit)
+			if (FinalHealth <= 0)
 			{
-				// Construct a gameplay cue event for this death
-				//FGameplayCueParameters Params(Data.EffectSpec.GetContext());
-				//Params.RawMagnitude = Data.EvaluatedData.Magnitude;;
-				//Params.NormalizedMagnitude = FMath::Abs(Data.EvaluatedData.Magnitude / MaxHealth);
-				//Params.AggregatedSourceTags = *Data.EffectSpec.CapturedSourceTags.GetAggregatedTags();
-				//Params.AggregatedTargetTags = *Data.EffectSpec.CapturedTargetTags.GetAggregatedTags();
-
-				//GASChar->Die(DamagedController, DamagedActor, Data.EffectSpec, Params.RawMagnitude, Params.Normal);
-
 				DamagedUnit->Die(AttackingUnit);
 				AttackingUnit->TargetDied(DamagedUnit);
 			}

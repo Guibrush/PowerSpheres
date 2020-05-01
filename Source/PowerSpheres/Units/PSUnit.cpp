@@ -249,11 +249,30 @@ void APSUnit::SetCurrentAbilityType(EAbilityType NewAbilityType)
 
 void APSUnit::Die(APSUnit* Attacker)
 {
-	if (HasAuthority() && Squad && Attacker)
+	if (HasAuthority() && Squad)
 	{
-		Squad->UnitDied(this);
+		CancelCurrentAbility();
 
-		Destroy();
+		Squad->UnitDied(this);
+	}
+
+	DieMulticast(Attacker);
+}
+
+void APSUnit::DieMulticast_Implementation(APSUnit* Attacker)
+{
+	MapIcon->DestroyComponent();
+
+	GetCapsuleComponent()->DestroyComponent();
+
+	UnitDiedEvent(Attacker);
+}
+
+void APSUnit::UnitDamaged(APSUnit* Attacker, FGameplayCueParameters Params)
+{
+	if (Squad)
+	{
+		Squad->SquadDamagedEvent(this, Attacker, Params);
 	}
 }
 
