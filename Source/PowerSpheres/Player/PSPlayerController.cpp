@@ -1,18 +1,19 @@
 // Copyright 2019-2020 Alberto & co. All Rights Reserved.
 
 #include "PSPlayerController.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Runtime/Engine/Classes/Components/DecalComponent.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
-#include "PSCharacter.h"
-#include "Engine/World.h"
-#include "Net/UnrealNetwork.h"
-#include "UI/PSHUD.h"
-#include "GameplayAbilitySpec.h"
 #include "AbilitySystemComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameplayAbilitySpec.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 #include "MapFog.h"
+#include "Net/UnrealNetwork.h"
+#include "PowerSpheres/PSPowerSphereCrate.h"
+#include "PSCharacter.h"
 #include "PSStaticLibrary.h"
+#include "Runtime/Engine/Classes/Components/DecalComponent.h"
+#include "UI/PSHUD.h"
 
 APSPlayerController::APSPlayerController()
 {
@@ -72,65 +73,68 @@ void APSPlayerController::OnActionPressed()
 void APSPlayerController::OnActionReleased()
 {
 	UWorld* const World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	if (SelectedSquads.Num() <= 0)
-	{
-		return;
-	}
+	if (!World) { return; }
+	if (SelectedSquads.Num() <= 0) { return; }
 
 	// Trace to see what is under the mouse cursor
 	FHitResult Hit;
 	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 
-	if (Hit.bBlockingHit)
+	if (!Hit.bBlockingHit) { return; }
+
+	APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
+	if (PSUnit && !PSUnit->CoveredByFOW)
 	{
-		APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
-		if (PSUnit && !PSUnit->CoveredByFOW)
+		// Hit an unit.
+		FAbilityParams AbilityParams = FAbilityParams();
+		AbilityParams.Actor = PSUnit->Squad;
+		if (UPSStaticLibrary::AreEnemyTeams(PSUnit->Squad->Team, Team))
 		{
-			// Hit an unit.
-			FAbilityParams AbilityParams = FAbilityParams();
-			AbilityParams.Actor = PSUnit->Squad;
-			if (UPSStaticLibrary::AreEnemyTeams(PSUnit->Squad->Team, Team))
-			{
-				// Hit enemy squad.
-				UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
-			}
-			else
-			{
-				// Hit friendly squad (doesn't matter the player owner for now).
-				UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
-			}
+			// Hit enemy squad.
+			UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
 		}
 		else
 		{
-			// Hit a place where we can try to move.
-			if (SelectedSquads.Num() > 1)
-			{
-				FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
-				Formation->SetActorLocation(Hit.ImpactPoint);
-				Formation->SetActorRotation(FormationRotation);
-				int i = 0;
-				for (APSSquad* Squad : SelectedSquads)
-				{
-					FAbilityParams AbilityParams = FAbilityParams();
-					AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
-					AbilityParams.Rotation = Formation->GetActorRotation();
-					UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
-					i++;
-				}
-			}
-			else
-			{
-				FAbilityParams AbilityParams = FAbilityParams();
-				AbilityParams.Position = Hit.ImpactPoint;
-				UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
-			}
+			// Hit friendly squad (doesn't matter the player owner for now).
+			UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
+		}
+		return;
+	}
+
+	APSPowerSphereCrate* PSCrate = Cast<APSPowerSphereCrate>(Hit.GetActor());
+
+	if (PSCrate && !PSCrate->GetIsOpened())
+	{	
+		// If we can open it we won't try to move
+		if (PSCrate->TryToOpen())
+		{			
+			return;
+		}		
+	}
+
+	// Hit a place where we can try to move.
+	if (SelectedSquads.Num() > 1)
+	{
+		FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
+		Formation->SetActorLocation(Hit.ImpactPoint);
+		Formation->SetActorRotation(FormationRotation);
+		int i = 0;
+		for (APSSquad* Squad : SelectedSquads)
+		{
+			FAbilityParams AbilityParams = FAbilityParams();
+			AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
+			AbilityParams.Rotation = Formation->GetActorRotation();
+			UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
+			i++;
 		}
 	}
+	else
+	{
+		FAbilityParams AbilityParams = FAbilityParams();
+		AbilityParams.Position = Hit.ImpactPoint;
+		UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
+	}
+	
 }
 
 void APSPlayerController::OnSelectPressed()
