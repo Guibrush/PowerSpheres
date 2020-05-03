@@ -20,13 +20,7 @@ void APSPowerSphereCrate::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 
 bool APSPowerSphereCrate::TryToOpen_Implementation()
 {
-	//if (IsOpened) { return false; }
-
-	//// TODO Add logic to check if player units within radius
-	//// TODO if in radius
-
-	//IsOpened = true;
-	//return true;
-	return true;
+	// Implemented in BP
+	return false;
 }
 
