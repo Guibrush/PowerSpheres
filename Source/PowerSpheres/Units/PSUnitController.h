@@ -18,6 +18,8 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UBehaviorTree* BehaviorTree;
+
+	APSUnitController(const FObjectInitializer& ObjectInitializer = FObjectInitializer::Get());
 	
 protected:
 

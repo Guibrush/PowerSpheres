@@ -188,7 +188,7 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 {
 	if (HasAuthority() && Squad)
 	{
-		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[AbilityType].UnitAbilityMap.Find(this);
+		TSubclassOf<class UPSGameplayAbility> Ability = Squad->SquadAbilities[AbilityType];
 		if (AbilitySystem && Ability)
 		{
 			if (bIsUserInput)
@@ -214,7 +214,7 @@ void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 			}
 			else
 			{
-				AbilitySystem->TryActivateAbilityByClass(Ability->Get());
+				AbilitySystem->TryActivateAbilityByClass(Ability);
 			}
 		}
 	}
@@ -226,7 +226,7 @@ void APSUnit::CancelCurrentAbility()
 {
 	if (CurrentAbilityType != EAbilityType::None)
 	{
-		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
+		TSubclassOf<class UPSGameplayAbility> Ability = Squad->SquadAbilities[CurrentAbilityType];
 		if (Ability)
 		{
 			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
@@ -303,8 +303,8 @@ void APSUnit::AbilityFinished(UPSGameplayAbility* Ability)
 {
 	if (HasAuthority() && Squad && CurrentAbilityType != EAbilityType::None)
 	{
-		TSubclassOf<class UPSGameplayAbility>* CurrentAbility = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
-		if (CurrentAbility && *CurrentAbility == Ability->GetClass())
+		TSubclassOf<class UPSGameplayAbility> CurrentAbility = Squad->SquadAbilities[CurrentAbilityType];
+		if (CurrentAbility && CurrentAbility == Ability->GetClass())
 		{
 			APSSquad* TargetSquad = Cast<APSSquad>(CurrentAbilityParams.Actor);
 			if (!TargetSquad)
@@ -347,7 +347,7 @@ TSubclassOf<class UPSGameplayAbility> APSUnit::GetCurrentAbility()
 	TSubclassOf<class UPSGameplayAbility> Ability = nullptr;
 	if (CurrentAbilityType != EAbilityType::None)
 	{
-		Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
+		Ability = Squad->SquadAbilities[CurrentAbilityType];
 	}
 
 	return Ability;

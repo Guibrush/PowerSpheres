@@ -17,9 +17,9 @@ class POWERSPHERES_API UPSPowerSphere : public UObject
 
 public:
 
-	/** Type of power sphere. This normally indicates if its a movement or an attack sphere, for example. */
+	/** Type of ability. None indicates that this power sphere is an effect. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PowerSphereConfig)
-	EPowerSphereType PowerSphereType = EPowerSphereType::Generic;
+	EAbilityType AbilityType = EAbilityType::None;
 
 	/** Gameplay effect that is going to be applied to the units equipped with this power sphere. */
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PowerSphereConfig)

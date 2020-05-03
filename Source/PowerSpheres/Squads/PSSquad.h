@@ -8,41 +8,6 @@
 #include "GAS/PSGameplayAbility.h"
 #include "PSSquad.generated.h"
 
-USTRUCT(BlueprintType)
-struct POWERSPHERES_API FAbilityMappingSet
-{
-	GENERATED_USTRUCT_BODY()
-
-	FAbilityMappingSet()
-		: UnitAbilityMap(TMap<APSUnit*, TSubclassOf<class UPSGameplayAbility>>())
-	{ }
-
-	UPROPERTY(BlueprintReadOnly)
-	TMap<APSUnit*, TSubclassOf<class UPSGameplayAbility>> UnitAbilityMap;
-};
-
-USTRUCT(BlueprintType)
-struct POWERSPHERES_API FSpecialUnitMap
-{
-	GENERATED_USTRUCT_BODY()
-
-	FSpecialUnitMap()
-		: UnitIndex(0)
-		, Unit(nullptr)
-	{ }
-
-	FSpecialUnitMap(int NewUnitIndex, APSUnit* NewUnit)
-		: UnitIndex(NewUnitIndex)
-		, Unit(NewUnit)
-	{ }
-
-	UPROPERTY(BlueprintReadOnly)
-	int UnitIndex;
-
-	UPROPERTY(BlueprintReadOnly)
-	APSUnit* Unit;
-};
-
 class UPSSquadMemberComponent;
 
 UCLASS()
@@ -88,6 +53,9 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void SquadDamagedEvent(APSUnit* Unit, APSUnit* Attacker, FGameplayCueParameters Params);
 
+	UFUNCTION(BlueprintCallable)
+	void EquipSphere(TSubclassOf<class UPSPowerSphere> NewSphere);
+
 	/** Gets all the units in this squad in a single array. */
 	UFUNCTION(BlueprintPure)
 	TArray<APSUnit*> GetAllUnits();
@@ -103,16 +71,13 @@ public:
 	int TotalUnitsNumber;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
-	int SpecialUnitsNumber;
+	TSubclassOf<class APSUnit> UnitBlueprint;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
-	FUnitComposition CaptainUnitComposition;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition, Replicated)
+	FSquadEquipment SquadEquipment;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
-	FUnitComposition SquadUnitComposition;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = SquadComposition)
-	TArray<FUnitComposition> SpecialUnitsComposition;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = SquadComposition)
+	float DistanceBetweenUnits;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	ETeamType Team;
@@ -121,23 +86,13 @@ public:
 	class APSPlayerController* PlayerOwner;
 
 	UPROPERTY(BlueprintReadOnly, Replicated)
-	APSUnit* CaptainUnit;
-
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	TArray<APSUnit*> BasicUnits;
-
-	UPROPERTY(BlueprintReadOnly, Replicated)
-	TArray<FSpecialUnitMap> SpecialUnits;
+	TArray<APSUnit*> UnitList;
 
 	UPROPERTY(BlueprintReadWrite, Replicated)
 	FAbilityParams CurrentAbilityParams;
 
-	/** 
-	This structure is too complex to replicate it to the client. We need to use another
-	data structure to replicate this information to the client.
-	*/
-	UPROPERTY(BlueprintReadOnly)
-	TMap<EAbilityType, FAbilityMappingSet> AbilitiesMapping;
+	UPROPERTY(BlueprintReadOnly, Replicated)
+	TMap<EAbilityType, TSubclassOf<class UPSGameplayAbility>> SquadAbilities;
 
 protected:
 
@@ -146,14 +101,12 @@ protected:
 
 private:
 
-	APSUnit* SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform);
+	TArray<FVector> ValidUnitsDirection;
 
-	void InitAbilitiesMapping();
+	APSUnit* SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres);
 
-	void ConstructAbilities(FUnitComposition UnitComposition, APSUnit* NewUnit);
+	void ConstructAbilities();
 
-	void RemoveUnitFromAbilitiesMapping(APSUnit* Unit);
-
-	FUnitComposition MakeUnitComposition(FUnitComposition UniqueUnitComposition);
+	void GenerateValidUnitsDirections();
 
 };
