@@ -24,3 +24,8 @@ bool APSPowerSphereCrate::TryToOpen_Implementation()
 	return false;
 }
 
+void APSPowerSphereCrate::SpawnPowerSpheres_Implementation()
+{
+
+}
+

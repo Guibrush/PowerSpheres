@@ -27,6 +27,9 @@ public:
 	UFUNCTION(BlueprintNativeEvent, Category = "PowerSphereCrate")
 	bool TryToOpen();
 
+	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "PowerSphereCrate")
+	void SpawnPowerSpheres();
+
 	UFUNCTION(BlueprintCallable, Category = "PowerSphereCrate")
 	bool GetIsOpened() const { return IsOpened; }
 };
