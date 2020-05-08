@@ -97,6 +97,9 @@ protected:
 	UFUNCTION(Server, Reliable, WithValidation)
 	void UseSingleSquadAbility(APSSquad* Squad, EAbilityType AbilityType, FAbilityParams AbilityParams);
 
+	UFUNCTION(Server, Reliable, WithValidation)
+	void ServerTryToOpenPSCrate(class APSPowerSphereCrate* PSCrate);
+
 private:
 
 	/** Actor representing the fog of war in the map. */
