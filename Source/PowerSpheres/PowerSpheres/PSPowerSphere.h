@@ -29,4 +29,8 @@ public:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PowerSphereConfig)
 	TSubclassOf<class UPSGameplayAbility> GameplayAbility;
 
+	/** Power sphere description used for UI. */
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = PowerSphereConfig)
+	FText Description;
+
 };

@@ -23,6 +23,9 @@ public:
 
 	const TArray<APSUnit*> FinishSelectionRectangle();
 
+	UFUNCTION(BlueprintCallable)
+	const TArray<APSUnit*> GetTempSelectedUnits();
+
 private:
 
 	void GetUnitsInSelectionRectangle(const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<APSUnit*>& OutActors);

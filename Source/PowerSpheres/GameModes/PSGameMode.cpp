@@ -9,6 +9,7 @@
 #include "PowerSpheres/PSPowerSphereCrateSpawnerManager.h"
 #include "PowerSpheres/PSPowerSphereCrateSpawner.h"
 #include "PSGameState.h"
+#include "TimerManager.h"
 
 APSGameMode::APSGameMode(const FObjectInitializer& ObjectInitializer)
 	: Super(ObjectInitializer)

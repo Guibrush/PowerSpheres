@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Blueprint/UserWidget.h"
+#include "IUserObjectListEntry.h"
 #include "PSWidget.generated.h"
 
 /**
  * 
  */
 UCLASS()
-class POWERSPHERES_API UPSWidget : public UUserWidget
+class POWERSPHERES_API UPSWidget : public UUserWidget, public IUserObjectListEntry
 {
 	GENERATED_BODY()
 

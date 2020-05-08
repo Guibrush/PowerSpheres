@@ -17,6 +17,10 @@ class POWERSPHERES_API UPSGameplayAbility : public UGameplayAbility
 
 public:
 
+	/** Indicates whether this ability has to be executed in place or checking the distance against a given target. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	bool ExecuteInPlace = false;
+
 	/** Maximum distance to which this ability can be used. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	float UseDistance;
@@ -24,10 +28,6 @@ public:
 	/** Indicates whether we want this ability to set Unit->CurrentAbility to nullptr when finished or canceled. True by default. */
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	bool bCancelItself = true;
-
-	///** Weapon to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
-	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	//class USkeletalMesh* AbilityWeapon;
 
 	/** Weapon data to equip to the unit in case this ability gets equipped on the EAbilityType::ActionEnemyUnit slot. */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
