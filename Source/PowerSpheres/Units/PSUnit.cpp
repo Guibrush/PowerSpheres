@@ -48,13 +48,16 @@ void APSUnit::BeginPlay()
 {
 	Super::BeginPlay();
 
-	if (AbilitySystem)
+	if (HasAuthority())
 	{
-		AbilitySystem->InitAbilityActorInfo(this, this);
-
-		if (AttrDataTable && AttributeSetBlueprint)
+		if (AbilitySystem)
 		{
-			AttributeSet = AbilitySystem->InitStats(AttributeSetBlueprint, AttrDataTable);
+			AbilitySystem->InitAbilityActorInfo(this, this);
+
+			if (AttrDataTable && AttributeSetBlueprint)
+			{
+				AttributeSet = AbilitySystem->InitStats(AttributeSetBlueprint, AttrDataTable);
+			}
 		}
 	}
 
@@ -134,6 +137,8 @@ void APSUnit::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeP
 	DOREPLIFETIME(APSUnit, ActionMoveToLocation);
 	DOREPLIFETIME(APSUnit, EquippedWeaponData);
 	DOREPLIFETIME(APSUnit, MeshMergeParameters);
+	DOREPLIFETIME(APSUnit, AbilitySystem);
+	DOREPLIFETIME(APSUnit, AttributeSet);
 }
 
 void APSUnit::PossessedBy(AController* NewController)
@@ -186,35 +191,39 @@ void APSUnit::GiveAbility(TSubclassOf<class UPSGameplayAbility> Ability)
 
 void APSUnit::UseAbility(EAbilityType AbilityType, bool bIsUserInput)
 {
-	if (HasAuthority() && Squad)
+	if (HasAuthority() && Squad && AbilitySystem)
 	{
-		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[AbilityType].UnitAbilityMap.Find(this);
-		if (AbilitySystem && Ability)
+		if (bIsUserInput)
 		{
-			if (bIsUserInput)
+			if (CurrentAbilityType != EAbilityType::None)
 			{
-				if (CurrentAbilityType != EAbilityType::None)
+				TSubclassOf<class UPSGameplayAbility> CurrentAbility = Squad->SquadAbilities[CurrentAbilityType];
+				if (CurrentAbility)
 				{
-					UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
+					UPSGameplayAbility* AbilityCDO = Cast<UPSGameplayAbility>(CurrentAbility->GetDefaultObject());
 					AbilitySystem->CancelAbility(AbilityCDO);
 				}
-
-				ResetCurrentAbility(false);
-
-				// We wait one tick after setting CurrentAbilityType to None to let the AI to run
-				// their logic.
-				UWorld* const World = GetWorld();
-				if (World)
-				{
-					FTimerDelegate TimerDelegate;
-					TimerDelegate.BindUFunction(this, FName("SetCurrentAbilityType"), AbilityType);
-					World->GetTimerManager().SetTimerForNextTick(TimerDelegate);
-				}
-
 			}
-			else
+
+			ResetCurrentAbility(false);
+
+			// We wait one tick after setting CurrentAbilityType to None to let the AI to run
+			// their logic.
+			UWorld* const World = GetWorld();
+			if (World)
 			{
-				AbilitySystem->TryActivateAbilityByClass(Ability->Get());
+				FTimerDelegate TimerDelegate;
+				TimerDelegate.BindUFunction(this, FName("SetCurrentAbilityType"), AbilityType);
+				World->GetTimerManager().SetTimerForNextTick(TimerDelegate);
+			}
+
+		}
+		else
+		{
+			TSubclassOf<class UPSGameplayAbility> Ability = Squad->SquadAbilities[AbilityType];
+			if (Ability)
+			{
+				AbilitySystem->TryActivateAbilityByClass(Ability);
 			}
 		}
 	}
@@ -226,10 +235,10 @@ void APSUnit::CancelCurrentAbility()
 {
 	if (CurrentAbilityType != EAbilityType::None)
 	{
-		TSubclassOf<class UPSGameplayAbility>* Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
+		TSubclassOf<class UPSGameplayAbility> Ability = Squad->SquadAbilities[CurrentAbilityType];
 		if (Ability)
 		{
-			UGameplayAbility* AbilityCDO = Cast<UGameplayAbility>(Ability->GetDefaultObject());
+			UPSGameplayAbility* AbilityCDO = Cast<UPSGameplayAbility>(Ability->GetDefaultObject());
 			AbilitySystem->CancelAbility(AbilityCDO);
 		}
 
@@ -303,8 +312,8 @@ void APSUnit::AbilityFinished(UPSGameplayAbility* Ability)
 {
 	if (HasAuthority() && Squad && CurrentAbilityType != EAbilityType::None)
 	{
-		TSubclassOf<class UPSGameplayAbility>* CurrentAbility = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap.Find(this);
-		if (CurrentAbility && *CurrentAbility == Ability->GetClass())
+		TSubclassOf<class UPSGameplayAbility> CurrentAbility = Squad->SquadAbilities[CurrentAbilityType];
+		if (CurrentAbility && CurrentAbility == Ability->GetClass())
 		{
 			APSSquad* TargetSquad = Cast<APSSquad>(CurrentAbilityParams.Actor);
 			if (!TargetSquad)
@@ -347,7 +356,7 @@ TSubclassOf<class UPSGameplayAbility> APSUnit::GetCurrentAbility()
 	TSubclassOf<class UPSGameplayAbility> Ability = nullptr;
 	if (CurrentAbilityType != EAbilityType::None)
 	{
-		Ability = Squad->AbilitiesMapping[CurrentAbilityType].UnitAbilityMap[this];
+		Ability = Squad->SquadAbilities[CurrentAbilityType];
 	}
 
 	return Ability;

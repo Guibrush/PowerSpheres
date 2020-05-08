@@ -2,7 +2,6 @@
 
 
 #include "PSSquad.h"
-#include "PSSquadMemberComponent.h"
 #include "Blueprint/AIBlueprintHelperLibrary.h"
 #include "Components/CapsuleComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
@@ -29,79 +28,57 @@ void APSSquad::BeginPlay()
 
 	if (HasAuthority())
 	{
-		InitAbilitiesMapping();
-
-		// We need at least a TotalUnitsNumber of 1 unit. The requirement is that we need to spawn at least a captain for the squad.
-		// Also if we have special units in the squad, that number needs to be less than the total units. This way we allow squads
-		// with only a captain and special units (without basic units) or an unit with only the captain (a hero or something similar).
-		if (TotalUnitsNumber > 0 && TotalUnitsNumber > SpecialUnitsNumber)
+		if (TotalUnitsNumber > 0)
 		{
-			BasicUnits.Empty();
-			SpecialUnits.Empty();
-			TArray<UPSSquadMemberComponent*> SquadMemberComponents;
-			GetComponents<UPSSquadMemberComponent>(SquadMemberComponents);
-			int UnitsSpawned = 0;
+			ConstructAbilities();
+
+			GenerateValidUnitsDirections();
+
+			TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres;
+			SquadEquipment.AbilitiesSlots.GenerateValueArray(PowerSpheres);
+			PowerSpheres.Append(SquadEquipment.Effects);
+
+			UnitList.Empty();
 			FTransform SpawnTransform;
-
-			// We spawn the captain first.
-			SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-			CaptainUnit = SpawnUnit(MakeUnitComposition(CaptainUnitComposition), SpawnTransform);
-			UnitsSpawned++;
-
-			// Spawn the special units.
-			for (int i = 0; i < SpecialUnitsNumber; i++)
+			for (int i = 0; i < TotalUnitsNumber; i++)
 			{
-				SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-				SpecialUnits.Add(FSpecialUnitMap(i, SpawnUnit(MakeUnitComposition(SpecialUnitsComposition[i]), SpawnTransform)));
-				UnitsSpawned++;
-			}
+				if (i == 0)
+				{
+					SpawnTransform = FTransform(GetActorRotation(), GetActorLocation());
+				}
+				else
+				{
+					FVector SpawnLocation = GetActorLocation() + ValidUnitsDirection[i];
 
-			// Spawn the rest of the squad as basic units.
-			for (int i = 0; i < (TotalUnitsNumber - SpecialUnitsNumber - 1); i++)
-			{
-				SpawnTransform = FTransform(SquadMemberComponents[UnitsSpawned]->GetComponentRotation(), SquadMemberComponents[UnitsSpawned]->GetComponentLocation());
-				BasicUnits.Add(SpawnUnit(SquadUnitComposition, SpawnTransform));
-				UnitsSpawned++;
+					SpawnTransform = FTransform(GetActorRotation(), SpawnLocation);
+				}
+
+				UnitList.Add(SpawnUnit(SpawnTransform, PowerSpheres));
 			}
 		}
 	}
 }
 
-FUnitComposition APSSquad::MakeUnitComposition(FUnitComposition UniqueUnitComposition)
-{
-	FUnitComposition UnitComp = FUnitComposition();
-	UnitComp.UnitBlueprint = UniqueUnitComposition.UnitBlueprint;
-	UnitComp.MovementSlot = UniqueUnitComposition.MovementSlot ? UniqueUnitComposition.MovementSlot : SquadUnitComposition.MovementSlot;
-	UnitComp.WeaponSlot = UniqueUnitComposition.WeaponSlot ? UniqueUnitComposition.WeaponSlot : SquadUnitComposition.WeaponSlot;
-
-	UnitComp.AbilitiesPowerSpheres = UniqueUnitComposition.AbilitiesPowerSpheres;
-	if (!UniqueUnitComposition.bOverwriteSquadAbilities)
-		UnitComp.AbilitiesPowerSpheres.Append(SquadUnitComposition.AbilitiesPowerSpheres);
-
-	UnitComp.EffectsPowerSpheres = UniqueUnitComposition.EffectsPowerSpheres;
-	if (!UniqueUnitComposition.bOverwriteSquadEffects)
-		UnitComp.EffectsPowerSpheres.Append(SquadUnitComposition.EffectsPowerSpheres);
-
-	return UnitComp;
-}
-
-APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTransform)
+APSUnit* APSSquad::SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres)
 {
 	APSUnit* NewUnit = nullptr;
 	UWorld* const World = GetWorld();
 	if (World)
 	{
-		NewUnit = World->SpawnActorDeferred<APSUnit>(UnitComposition.UnitBlueprint, UnitTransform, this);
+		NewUnit = World->SpawnActorDeferred<APSUnit>(UnitBlueprint, UnitTransform, this);
 		if (NewUnit)
 		{
-			UPSPowerSphere* PowerSphere = UnitComposition.WeaponSlot.GetDefaultObject();
-			if (PowerSphere)
+			if (SquadEquipment.AbilitiesSlots.Find(EAbilityType::ActionEnemyUnit))
 			{
-				UPSGameplayAbility* GameplayAbility = PowerSphere->GameplayAbility.GetDefaultObject();
-				if (GameplayAbility && GameplayAbility->WeaponData && GameplayAbility->WeaponData->AbilityWeapon)
+				UPSPowerSphere* PowerSphere = SquadEquipment.AbilitiesSlots[EAbilityType::ActionEnemyUnit].GetDefaultObject();
+				if (PowerSphere)
 				{
-					NewUnit->MeshMergeParameters.MeshesToMerge.Add(GameplayAbility->WeaponData->AbilityWeapon);
-					NewUnit->EquippedWeaponData = GameplayAbility->WeaponData;
+					UPSGameplayAbility* GameplayAbility = PowerSphere->GameplayAbility.GetDefaultObject();
+					if (GameplayAbility && GameplayAbility->WeaponData && GameplayAbility->WeaponData->AbilityWeapon)
+					{
+						NewUnit->MeshMergeParameters.MeshesToMerge.Add(GameplayAbility->WeaponData->AbilityWeapon);
+						NewUnit->EquippedWeaponData = GameplayAbility->WeaponData;
+					}
 				}
 			}
 
@@ -110,76 +87,78 @@ APSUnit* APSSquad::SpawnUnit(FUnitComposition UnitComposition, FTransform UnitTr
 			NewUnit->Squad = this;
 			NewUnit->FinishSpawning(UnitTransform);
 
-			ConstructAbilities(UnitComposition, NewUnit);
+			NewUnit->GivePowers(PowerSpheres);
 		}
 	}
 
 	return NewUnit;
 }
 
-void APSSquad::InitAbilitiesMapping()
+void APSSquad::ConstructAbilities()
 {
-	if (AbilitiesMapping.Num() == 0)
+	SquadAbilities.Empty();
+
+	for (auto& Elem : SquadEquipment.AbilitiesSlots)
 	{
-		for (uint8 i = 0; i <= (uint8)EAbilityType::MAX; i++)
+		UPSPowerSphere* AbilityPowerSphere = Elem.Value.GetDefaultObject();
+		if (AbilityPowerSphere)
 		{
-			AbilitiesMapping.Add((EAbilityType)i, FAbilityMappingSet());
+			SquadAbilities.Add(Elem.Key, AbilityPowerSphere->GameplayAbility);
 		}
 	}
 }
 
-void APSSquad::ConstructAbilities(FUnitComposition UnitComposition, APSUnit* NewUnit)
+void APSSquad::GenerateValidUnitsDirections()
 {
-	TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres = TArray<TSubclassOf<class UPSPowerSphere>>();
-
-	if (UnitComposition.MovementSlot)
+	for (int i = 0; i < TotalUnitsNumber; i++)
 	{
-		UPSPowerSphere* MovementPowerSphere = UnitComposition.MovementSlot.GetDefaultObject();
-		if (MovementPowerSphere)
+		FVector TempDirection;
+		FVector TempLocation;
+		bool ValidLocation = false;
+		while (!ValidLocation)
 		{
-			AbilitiesMapping[EAbilityType::ActionMoveTo].UnitAbilityMap.Add(NewUnit, MovementPowerSphere->GameplayAbility);
-		}
-	}
-
-	if (UnitComposition.WeaponSlot)
-	{
-		UPSPowerSphere* WeaponPowerSphere = UnitComposition.WeaponSlot.GetDefaultObject();
-		if (WeaponPowerSphere)
-		{
-			AbilitiesMapping[EAbilityType::ActionEnemyUnit].UnitAbilityMap.Add(NewUnit, WeaponPowerSphere->GameplayAbility);
-		}
-	}
-
-	PowerSpheres.Add(UnitComposition.MovementSlot);
-	PowerSpheres.Add(UnitComposition.WeaponSlot);
-	PowerSpheres.Append(UnitComposition.AbilitiesPowerSpheres);
-	PowerSpheres.Append(UnitComposition.EffectsPowerSpheres);
-
-	NewUnit->GivePowers(PowerSpheres);
-
-	for (TSubclassOf<class UPSPowerSphere> PowerSphere : UnitComposition.AbilitiesPowerSpheres)
-	{
-		UPSPowerSphere* PowerSphereObject = PowerSphere.GetDefaultObject();
-		if (PowerSphereObject)
-		{
-			EAbilityType AbilitySlot = EAbilityType::None;
-			for (uint8 i = (uint8)EAbilityType::Ability1; i <= (uint8)EAbilityType::MAX; i++)
+			TempDirection = GetActorForwardVector() * -1.0f;
+			TempDirection = TempDirection.RotateAngleAxis(FMath::RandRange(-90.0f, 90.0f), FVector::UpVector);
+			TempDirection *= DistanceBetweenUnits + FMath::RandRange(0.0f, DistanceBetweenUnits);
+			TempLocation = GetActorLocation() + TempDirection;
+			ValidLocation = true;
+			for (FVector ValidDirection : ValidUnitsDirection)
 			{
-				if (AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.Num() == 0)
+				FVector ValidPosition = GetActorLocation() + ValidDirection;
+				float DistanceToSpawn = (TempLocation - ValidPosition).Size();
+				if (DistanceToSpawn < DistanceBetweenUnits)
 				{
-					AbilitySlot = (EAbilityType)i;
+					ValidLocation = false;
 					break;
 				}
-				else
-				{
-					if (AbilitiesMapping[(EAbilityType)i].UnitAbilityMap.FindKey(PowerSphereObject->GameplayAbility))
-					{
-						AbilitySlot = (EAbilityType)i;
-						break;
-					}
-				}
 			}
-			AbilitiesMapping[AbilitySlot].UnitAbilityMap.Add(NewUnit, PowerSphereObject->GameplayAbility);
+		}
+
+		ValidUnitsDirection.Add(TempDirection);
+	}
+}
+
+void APSSquad::EquipSphere(TSubclassOf<class UPSPowerSphere> NewSphere)
+{
+	UPSPowerSphere* NewPowerSphere = NewSphere.GetDefaultObject();
+	if (NewPowerSphere && NewPowerSphere->AbilityType > EAbilityType::None)
+	{
+		SquadEquipment.AbilitiesSlots.Add(NewPowerSphere->AbilityType, NewSphere);
+		SquadAbilities.Add(NewPowerSphere->AbilityType, NewPowerSphere->GameplayAbility);
+	}
+	else
+	{
+		SquadEquipment.Effects.Add(NewSphere);
+	}
+
+	TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres;
+	PowerSpheres.Add(NewSphere);
+	TArray<APSUnit*> Units = GetAllUnits();
+	for (APSUnit* Unit : Units)
+	{
+		if (Unit)
+		{
+			Unit->GivePowers(PowerSpheres);
 		}
 	}
 }
@@ -204,9 +183,9 @@ void APSSquad::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetime
 
 	DOREPLIFETIME(APSSquad, Team);
 	DOREPLIFETIME(APSSquad, PlayerOwner);
-	DOREPLIFETIME(APSSquad, BasicUnits);
-	DOREPLIFETIME(APSSquad, SpecialUnits);
-	DOREPLIFETIME(APSSquad, CaptainUnit);
+	DOREPLIFETIME(APSSquad, UnitList);
+	DOREPLIFETIME(APSSquad, SquadAbilities);
+	DOREPLIFETIME(APSSquad, SquadEquipment);
 }
 
 void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation, bool bIsUserInput)
@@ -219,100 +198,26 @@ void APSSquad::MoveSquad(const FVector DestLocation, const FRotator DestRotation
 	SetActorLocation(DestLocation);
 	SetActorRotation(MovementRotation);
 
-	TArray<UPSSquadMemberComponent*> SquadMemberComponents;
-	GetComponents<UPSSquadMemberComponent>(SquadMemberComponents);
+	ValidUnitsDirection.Empty();
+	GenerateValidUnitsDirections();
 
-	TArray<UPSSquadMemberComponent*> OccupiedComponents = TArray<UPSSquadMemberComponent*>();
-
-	// First I look for the component which is in the origin position of the squad and move the captain there.
-	if (CaptainUnit)
+	TArray<APSUnit*> Units = GetAllUnits();
+	int i = 0;
+	for (APSUnit* Unit : Units)
 	{
-		for (UPSSquadMemberComponent* SquadMemberComponent : SquadMemberComponents)
+		if (i == 0)
 		{
-			if (SquadMemberComponent->GetRelativeTransform().GetLocation() == FVector::ZeroVector)
-			{
-				CaptainUnit->ActionMoveToLocation = SquadMemberComponent->GetComponentLocation();
-				CaptainUnit->CurrentAbilityParams = FAbilityParams();
-				OccupiedComponents.Add(SquadMemberComponent);
-				CaptainUnit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
-				break;
-			}
+			Unit->ActionMoveToLocation = GetActorLocation();
 		}
-	}
-
-	// I move the basic units right after the captain because with the current implementation they are going to
-	// try to fill the most far away positions from the front of the squad.
-	if (BasicUnits.Num() > 0)
-	{
-		TArray<APSUnit*> SortedUnits = BasicUnits;
-		SortedUnits.Sort([this](const APSUnit& UnitA, const APSUnit& UnitB)
-			{
-				float DistanceA = FVector::DistSquared(UnitA.GetActorLocation(), this->GetActorLocation());
-				float DistanceB = FVector::DistSquared(UnitB.GetActorLocation(), this->GetActorLocation());
-				return DistanceA > DistanceB;
-			});
-
-		for (APSUnit* Unit : SortedUnits)
+		else
 		{
-			if (Unit)
-			{
-				SquadMemberComponents.Sort([Unit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
-					{
-						float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), Unit->GetActorLocation());
-						float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), Unit->GetActorLocation());
-						return DistanceA < DistanceB;
-					});
-				int i = 0;
-				while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
-				{
-					i++;
-				}
-
-				Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
-				Unit->CurrentAbilityParams = FAbilityParams();
-
-				OccupiedComponents.Add(SquadMemberComponents[i]);
-
-				Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
-			}
+			Unit->ActionMoveToLocation = GetActorLocation() + ValidUnitsDirection[i];
 		}
-	}
+		Unit->CurrentAbilityParams = FAbilityParams();
 
-	// Then I move the special units to the closests positions behind the captain.
-	if (SpecialUnits.Num() > 0)
-	{
-		TArray<FSpecialUnitMap> SortedSpecialUnits = SpecialUnits;
-		SortedSpecialUnits.Sort([this](const FSpecialUnitMap SpecialUnitMapA, const FSpecialUnitMap SpecialUnitMapB)
-			{
-				float DistanceA = FVector::DistSquared(SpecialUnitMapA.Unit->GetActorLocation(), this->GetActorLocation());
-				float DistanceB = FVector::DistSquared(SpecialUnitMapB.Unit->GetActorLocation(), this->GetActorLocation());
-				return DistanceA > DistanceB;
-			});
+		Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
 
-		for (FSpecialUnitMap SpecialUnit : SortedSpecialUnits)
-		{
-			if (SpecialUnit.Unit)
-			{
-				SquadMemberComponents.Sort([SpecialUnit](const UPSSquadMemberComponent& ComponentA, const UPSSquadMemberComponent& ComponentB)
-					{
-						float DistanceA = FVector::DistSquared(ComponentA.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
-						float DistanceB = FVector::DistSquared(ComponentB.GetComponentLocation(), SpecialUnit.Unit->GetActorLocation());
-						return DistanceA < DistanceB;
-					});
-				int i = 0;
-				while (i < SquadMemberComponents.Num() && OccupiedComponents.Contains(SquadMemberComponents[i]))
-				{
-					i++;
-				}
-
-				SpecialUnit.Unit->ActionMoveToLocation = SquadMemberComponents[i]->GetComponentLocation();
-				SpecialUnit.Unit->CurrentAbilityParams = FAbilityParams();
-
-				OccupiedComponents.Add(SquadMemberComponents[i]);
-
-				SpecialUnit.Unit->UseAbility(EAbilityType::ActionMoveTo, bIsUserInput);
-			}
-		}
+		i++;
 	}
 }
 
@@ -350,15 +255,17 @@ void APSSquad::UseSquadAbility(EAbilityType AbilityType, FAbilityParams AbilityP
 		}
 		else
 		{
-			TArray<APSUnit*> UnitsArray;
-			AbilitiesMapping[AbilityType].UnitAbilityMap.GenerateKeyArray(UnitsArray);
-			for (APSUnit* Unit : UnitsArray)
+			if (SquadAbilities.Find(AbilityType))
 			{
-				if (Unit)
+				TArray<APSUnit*> Units = GetAllUnits();
+				for (APSUnit* Unit : Units)
 				{
-					CurrentAbilityParams = AbilityParams;
-					Unit->CurrentAbilityParams = AbilityParams;
-					Unit->UseAbility(AbilityType, bIsUserInput);
+					if (Unit)
+					{
+						CurrentAbilityParams = AbilityParams;
+						Unit->CurrentAbilityParams = AbilityParams;
+						Unit->UseAbility(AbilityType, bIsUserInput);
+					}
 				}
 			}
 		}
@@ -387,37 +294,7 @@ bool APSSquad::SquadDestroyed()
 
 void APSSquad::UnitDied(APSUnit* Unit)
 {
-	RemoveUnitFromAbilitiesMapping(Unit);
-
-	if (Unit == CaptainUnit)
-	{
-		CaptainUnit = nullptr;
-		return;
-	}
-	
-	bool UnitFound = false;
-	int i = 0;
-	while (!UnitFound && i < SpecialUnits.Num())
-	{
-		UnitFound = SpecialUnits[i].Unit == Unit;
-		if (!UnitFound)
-			i++;
-	}
-	if (UnitFound)
-	{
-		SpecialUnits.RemoveAt(i);
-		return;
-	}
-
-	BasicUnits.Remove(Unit);
-}
-
-void APSSquad::RemoveUnitFromAbilitiesMapping(APSUnit* Unit)
-{
-	for (const TPair<EAbilityType, FAbilityMappingSet>& AbilitySet : AbilitiesMapping)
-	{
-		AbilitiesMapping[AbilitySet.Key].UnitAbilityMap.Remove(Unit);
-	}
+	UnitList.Remove(Unit);
 }
 
 void APSSquad::TargetSquadDestroyed(APSSquad* TargetSquad)
@@ -434,22 +311,5 @@ void APSSquad::TargetSquadDestroyed(APSSquad* TargetSquad)
 
 TArray<APSUnit*> APSSquad::GetAllUnits()
 {
-	TArray<APSUnit*> Units = TArray<APSUnit*>();
-
-	// Add the captain first.
-	if (CaptainUnit)
-	{
-		Units.Add(CaptainUnit);
-	}
-
-	// Add the special units in second place.
-	for (FSpecialUnitMap UnitMap : SpecialUnits)
-	{
-		Units.Add(UnitMap.Unit);
-	}
-
-	// Add the rest of the units in the squad.
-	Units.Append(BasicUnits);
-
-	return Units;
+	return UnitList;
 }

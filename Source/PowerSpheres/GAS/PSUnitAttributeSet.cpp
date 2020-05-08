@@ -19,6 +19,7 @@ void UPSUnitAttributeSet::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& 
 	DOREPLIFETIME(UPSUnitAttributeSet, Attack);
 	DOREPLIFETIME(UPSUnitAttributeSet, Defence);
 	DOREPLIFETIME(UPSUnitAttributeSet, ElementalDefence);
+	DOREPLIFETIME(UPSUnitAttributeSet, VisionRadius);
 }
 
 FGameplayAttribute UPSUnitAttributeSet::GetHealthAttribute() const

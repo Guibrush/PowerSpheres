@@ -168,11 +168,11 @@ private:
 	class UMapIconComponent* MapIcon;
 
 	/** Our ability system */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"), Replicated)
 	class UAbilitySystemComponent* AbilitySystem;
 
 	/** Our attribute set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"), Replicated)
 	const class UAttributeSet* AttributeSet;
 
 	// Indicates whether the last time UseAbility was called was because user input or not.

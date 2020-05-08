@@ -61,6 +61,11 @@ const TArray<APSUnit*> APSHUD::FinishSelectionRectangle()
 	return TempSelectedUnits;
 }
 
+const TArray<APSUnit*> APSHUD::GetTempSelectedUnits()
+{
+	return SelectedUnits;
+}
+
 void APSHUD::GetUnitsInSelectionRectangle(const FVector2D& FirstPoint, const FVector2D& SecondPoint, TArray<APSUnit*>& OutActors)
 {
 	APSPlayerController* PlayerController = Cast<APSPlayerController>(GetOwningPlayerController());

@@ -10,6 +10,9 @@
 #include "Formations/PSFormation.h"
 #include "PSPlayerController.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FSquadSelectedSignature, APSPlayerController, OnSquadSelected, APSSquad*, Squad);
+DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE_OneParam(FSquadDeselectedSignature, APSPlayerController, OnSquadDeselected, APSSquad*, Squad);
+
 UCLASS()
 class APSPlayerController : public APlayerController
 {
@@ -38,6 +41,21 @@ public:
 	UPROPERTY(BlueprintReadOnly, Replicated)
 	ETeamType Team;
 
+	UPROPERTY(BlueprintReadOnly)
+	AActor* ActorUnderCursor;
+
+	UPROPERTY(BlueprintAssignable)
+	FSquadSelectedSignature OnSquadSelected;
+
+	UPROPERTY(BlueprintAssignable)
+	FSquadDeselectedSignature OnSquadDeselected;
+
+	UFUNCTION(BlueprintCallable)
+	void SelectSquads(const TArray<APSSquad*> Squads);
+
+	UFUNCTION(BlueprintCallable)
+	void UseAbility(EAbilityType AbilityType);
+
 protected:
 
 	// Begin PlayerController interface
@@ -53,8 +71,17 @@ protected:
 	void OnSelectPressed();
 	void OnSelectReleased();
 
-	void OnUnitAbilityPressed();
-	void OnUnitAbilityReleased();
+	void Ability1Pressed();
+	void Ability1Released();
+
+	void Ability2Pressed();
+	void Ability2Released();
+
+	void Ability3Pressed();
+	void Ability3Released();
+
+	void Ability4Pressed();
+	void Ability4Released();
 
 	/** Input handlers for moving the character(camera) around and zoom in and out. */
 	void MoveForward(float Val);
@@ -62,7 +89,7 @@ protected:
 	void ZoomIn(float Val);
 
 	UFUNCTION(Server, Reliable, WithValidation)
-	void SelectSquads(const TArray<APSSquad*>& Squads);
+	void ServerSelectSquads(const TArray<APSSquad*>& Squads);
 
 	UFUNCTION(Server, Reliable, WithValidation)
 	void UseSelectedSquadsAbility(EAbilityType AbilityType, FAbilityParams AbilityParams);
