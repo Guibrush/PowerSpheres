@@ -274,6 +274,8 @@ void APSUnit::DieMulticast_Implementation(APSUnit* Attacker)
 
 	GetCapsuleComponent()->DestroyComponent();
 
+	SetSelectionDecalVisibility(false);
+
 	UnitDiedEvent(Attacker);
 }
 
