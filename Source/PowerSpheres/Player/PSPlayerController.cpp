@@ -123,11 +123,8 @@ void APSPlayerController::OnActionReleased()
 
 	if (PSCrate && !PSCrate->GetIsOpened())
 	{	
-		// If we can open it we won't try to move
-		if (PSCrate->TryToOpen())
-		{			
-			return;
-		}		
+		PSCrate->TryToOpen();
+		ServerTryToOpenPSCrate(PSCrate);
 	}
 
 	// Hit a place where we can try to move.
@@ -319,6 +316,17 @@ void APSPlayerController::UseSingleSquadAbility_Implementation(APSSquad* Squad, 
 }
 
 bool APSPlayerController::UseSingleSquadAbility_Validate(APSSquad* Squad, EAbilityType AbilityType, FAbilityParams AbilityParams)
+{
+	return true;
+}
+
+void APSPlayerController::ServerTryToOpenPSCrate_Implementation(class APSPowerSphereCrate* PSCrate)
+{
+	if (!PSCrate) { return; }
+	PSCrate->TryToOpen();
+}
+
+bool APSPlayerController::ServerTryToOpenPSCrate_Validate(class APSPowerSphereCrate* PSCrate)
 {
 	return true;
 }
