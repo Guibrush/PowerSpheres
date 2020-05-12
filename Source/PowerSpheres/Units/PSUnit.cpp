@@ -15,7 +15,7 @@
 #include "MapIconComponent.h"
 #include "Engine/World.h"
 #include "TimerManager.h"
-#include "PowerSpheres/PSPowerSphere.h"
+#include "PowerSpheres/PSPowerSphereData.h"
 #include "PSStaticLibrary.h"
 
 // Sets default values
@@ -158,11 +158,11 @@ void APSUnit::UnitDeselectedClient_Implementation()
 	SetSelectionDecalVisibility(false);
 }
 
-void APSUnit::GivePowers(TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres)
+void APSUnit::GivePowers(TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres)
 {
-	for (TSubclassOf<class UPSPowerSphere> PowerSphere : PowerSpheres)
+	for (TSubclassOf<class UPSPowerSphereData> PowerSphere : PowerSpheres)
 	{
-		UPSPowerSphere* PowerSphereObject = PowerSphere.GetDefaultObject();
+		UPSPowerSphereData* PowerSphereObject = PowerSphere.GetDefaultObject();
 		if (PowerSphereObject)
 		{
 			GiveEffect(PowerSphereObject->GameplayEffect, 1.0f);

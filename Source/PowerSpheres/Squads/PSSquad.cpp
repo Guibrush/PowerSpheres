@@ -8,7 +8,7 @@
 #include "AbilitySystemComponent.h"
 #include "Player/PSPlayerController.h"
 #include "Net/UnrealNetwork.h"
-#include "PowerSpheres/PSPowerSphere.h"
+#include "PowerSpheres/PSPowerSphereData.h"
 
 // Sets default values
 APSSquad::APSSquad()
@@ -34,7 +34,7 @@ void APSSquad::BeginPlay()
 
 			GenerateValidUnitsDirections();
 
-			TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres;
+			TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres;
 			SquadEquipment.AbilitiesSlots.GenerateValueArray(PowerSpheres);
 			PowerSpheres.Append(SquadEquipment.Effects);
 
@@ -59,7 +59,7 @@ void APSSquad::BeginPlay()
 	}
 }
 
-APSUnit* APSSquad::SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres)
+APSUnit* APSSquad::SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres)
 {
 	APSUnit* NewUnit = nullptr;
 	UWorld* const World = GetWorld();
@@ -70,7 +70,7 @@ APSUnit* APSSquad::SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class 
 		{
 			if (SquadEquipment.AbilitiesSlots.Find(EAbilityType::ActionEnemyUnit))
 			{
-				UPSPowerSphere* PowerSphere = SquadEquipment.AbilitiesSlots[EAbilityType::ActionEnemyUnit].GetDefaultObject();
+				UPSPowerSphereData* PowerSphere = SquadEquipment.AbilitiesSlots[EAbilityType::ActionEnemyUnit].GetDefaultObject();
 				if (PowerSphere)
 				{
 					UPSGameplayAbility* GameplayAbility = PowerSphere->GameplayAbility.GetDefaultObject();
@@ -100,7 +100,7 @@ void APSSquad::ConstructAbilities()
 
 	for (auto& Elem : SquadEquipment.AbilitiesSlots)
 	{
-		UPSPowerSphere* AbilityPowerSphere = Elem.Value.GetDefaultObject();
+		UPSPowerSphereData* AbilityPowerSphere = Elem.Value.GetDefaultObject();
 		if (AbilityPowerSphere)
 		{
 			SquadAbilities.Add(Elem.Key, AbilityPowerSphere->GameplayAbility);
@@ -138,9 +138,9 @@ void APSSquad::GenerateValidUnitsDirections()
 	}
 }
 
-void APSSquad::EquipSphere(TSubclassOf<class UPSPowerSphere> NewSphere)
+void APSSquad::EquipSphere(TSubclassOf<class UPSPowerSphereData> NewSphere)
 {
-	UPSPowerSphere* NewPowerSphere = NewSphere.GetDefaultObject();
+	UPSPowerSphereData* NewPowerSphere = NewSphere.GetDefaultObject();
 	if (NewPowerSphere && NewPowerSphere->AbilityType > EAbilityType::None)
 	{
 		SquadEquipment.AbilitiesSlots.Add(NewPowerSphere->AbilityType, NewSphere);
@@ -151,7 +151,7 @@ void APSSquad::EquipSphere(TSubclassOf<class UPSPowerSphere> NewSphere)
 		SquadEquipment.Effects.Add(NewSphere);
 	}
 
-	TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres;
+	TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres;
 	PowerSpheres.Add(NewSphere);
 	TArray<APSUnit*> Units = GetAllUnits();
 	for (APSUnit* Unit : Units)

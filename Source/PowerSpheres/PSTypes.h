@@ -73,15 +73,15 @@ struct POWERSPHERES_API FSquadEquipment
 	GENERATED_USTRUCT_BODY()
 
 	FSquadEquipment()
-		: AbilitiesSlots(TMap<EAbilityType, TSubclassOf<class UPSPowerSphere>>())
-		, Effects(TArray<TSubclassOf<class UPSPowerSphere>>())
+		: AbilitiesSlots(TMap<EAbilityType, TSubclassOf<class UPSPowerSphereData>>())
+		, Effects(TArray<TSubclassOf<class UPSPowerSphereData>>())
 	{ }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TMap<EAbilityType, TSubclassOf<class UPSPowerSphere>> AbilitiesSlots;
+	TMap<EAbilityType, TSubclassOf<class UPSPowerSphereData>> AbilitiesSlots;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<class UPSPowerSphere>> Effects;
+	TArray<TSubclassOf<class UPSPowerSphereData>> Effects;
 };
 
 UCLASS(BlueprintType)
