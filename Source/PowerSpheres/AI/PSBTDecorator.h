@@ -36,8 +36,8 @@ public:
 	UPROPERTY(BlueprintReadOnly)
 	APSSquad* SquadOwner = nullptr;
 
-	// Begin BTDecorator_BlueprintBase interface
+	// Begin UBTNode interface
 	virtual void SetOwner(AActor* ActorOwner) override;
-	// End BTDecorator_BlueprintBase interface
+	// End UBTNode interface
 	
 };

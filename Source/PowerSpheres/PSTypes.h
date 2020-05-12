@@ -8,21 +8,21 @@
 UENUM(BlueprintType)
 enum class EAbilityType : uint8
 {
-	None,
-	ActionMoveTo,
-	ActionEnemyUnit,
-	ActionFriendlyUnit,
-	ActionNeutralUnit,
-	Ability1,
-	Ability2,
-	Ability3,
-	Ability4,
-	Ability5,
-	Ability6,
-	Ability7,
-	Ability8,
-	Ability9,
-	Ability10,
+	None = 0,
+	ActionMoveTo = 1,
+	ActionEnemyUnit = 2,
+	ActionFriendlyUnit = 3,
+	ActionNeutralUnit = 4,
+	Ability1 = 5,
+	Ability2 = 6,
+	Ability3 = 7,
+	Ability4 = 8,
+	Ability5 = 9,
+	Ability6 = 10,
+	Ability7 = 11,
+	Ability8 = 12,
+	Ability9 = 13,
+	Ability10 = 14,
 	MAX,
 };
 
@@ -36,15 +36,6 @@ enum class ETeamType : uint8
 	Team3 = 4,
 	Team4 = 5,
 	Neutral,
-};
-
-UENUM(BlueprintType)
-enum class EPowerSphereType : uint8
-{
-	None,
-	Generic,
-	ActionMoveTo,
-	ActionEnemyUnit,
 };
 
 USTRUCT(BlueprintType)
@@ -77,40 +68,20 @@ struct POWERSPHERES_API FAbilityParams
 };
 
 USTRUCT(BlueprintType)
-struct POWERSPHERES_API FUnitComposition
+struct POWERSPHERES_API FSquadEquipment
 {
 	GENERATED_USTRUCT_BODY()
 
-	FUnitComposition()
-		: UnitBlueprint(nullptr)
-		, MovementSlot(nullptr)
-		, WeaponSlot(nullptr)
-		, AbilitiesPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
-		, bOverwriteSquadAbilities(false)
-		, EffectsPowerSpheres(TArray<TSubclassOf<class UPSPowerSphere>>())
-		, bOverwriteSquadEffects(false)
+	FSquadEquipment()
+		: AbilitiesSlots(TMap<EAbilityType, TSubclassOf<class UPSPowerSphere>>())
+		, Effects(TArray<TSubclassOf<class UPSPowerSphere>>())
 	{ }
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<class APSUnit> UnitBlueprint;
+	TMap<EAbilityType, TSubclassOf<class UPSPowerSphere>> AbilitiesSlots;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<class UPSPowerSphere> MovementSlot;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TSubclassOf<class UPSPowerSphere> WeaponSlot;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<class UPSPowerSphere>> AbilitiesPowerSpheres;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bOverwriteSquadAbilities;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	TArray<TSubclassOf<class UPSPowerSphere>> EffectsPowerSpheres;
-
-	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
-	bool bOverwriteSquadEffects;
+	TArray<TSubclassOf<class UPSPowerSphere>> Effects;
 };
 
 UCLASS(BlueprintType)
@@ -127,6 +98,7 @@ public:
 		, ShootAnim(nullptr)
 		, ShootIdleAnim(nullptr)
 		, ReloadAnim(nullptr)
+		, DieAnim(nullptr)
 		, AbilityWeapon(nullptr)
 	{ }
 
@@ -147,6 +119,9 @@ public:
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
 	UAnimSequenceBase* ReloadAnim;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadOnly)
+	UAnimSequenceBase* DieAnim;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	USkeletalMesh* AbilityWeapon;

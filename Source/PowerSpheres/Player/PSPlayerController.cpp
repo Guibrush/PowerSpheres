@@ -1,18 +1,19 @@
 // Copyright 2019-2020 Alberto & co. All Rights Reserved.
 
 #include "PSPlayerController.h"
-#include "Blueprint/AIBlueprintHelperLibrary.h"
-#include "Runtime/Engine/Classes/Components/DecalComponent.h"
-#include "HeadMountedDisplayFunctionLibrary.h"
-#include "PSCharacter.h"
-#include "Engine/World.h"
-#include "Net/UnrealNetwork.h"
-#include "UI/PSHUD.h"
-#include "GameplayAbilitySpec.h"
 #include "AbilitySystemComponent.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
+#include "Engine/World.h"
 #include "EngineUtils.h"
+#include "GameplayAbilitySpec.h"
+#include "HeadMountedDisplayFunctionLibrary.h"
 #include "MapFog.h"
+#include "Net/UnrealNetwork.h"
+#include "PowerSpheres/PSPowerSphereCrate.h"
+#include "PSCharacter.h"
 #include "PSStaticLibrary.h"
+#include "Runtime/Engine/Classes/Components/DecalComponent.h"
+#include "UI/PSHUD.h"
 
 APSPlayerController::APSPlayerController()
 {
@@ -23,6 +24,15 @@ APSPlayerController::APSPlayerController()
 void APSPlayerController::PlayerTick(float DeltaTime)
 {
 	Super::PlayerTick(DeltaTime);
+
+	// Trace to see what is under the mouse cursor
+	FHitResult Hit;
+	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
+
+	if (Hit.bBlockingHit)
+	{
+		ActorUnderCursor = Hit.GetActor();
+	}
 }
 
 void APSPlayerController::SetupInputComponent()
@@ -36,8 +46,17 @@ void APSPlayerController::SetupInputComponent()
 	InputComponent->BindAction("Select", IE_Pressed, this, &APSPlayerController::OnSelectPressed);
 	InputComponent->BindAction("Select", IE_Released, this, &APSPlayerController::OnSelectReleased);
 
-	InputComponent->BindAction("UnitAbility", IE_Pressed, this, &APSPlayerController::OnUnitAbilityPressed);
-	InputComponent->BindAction("UnitAbility", IE_Released, this, &APSPlayerController::OnUnitAbilityReleased);
+	InputComponent->BindAction("Ability1", IE_Pressed, this, &APSPlayerController::Ability1Pressed);
+	InputComponent->BindAction("Ability1", IE_Released, this, &APSPlayerController::Ability1Released);
+
+	InputComponent->BindAction("Ability2", IE_Pressed, this, &APSPlayerController::Ability2Pressed);
+	InputComponent->BindAction("Ability2", IE_Released, this, &APSPlayerController::Ability2Released);
+
+	InputComponent->BindAction("Ability3", IE_Pressed, this, &APSPlayerController::Ability3Pressed);
+	InputComponent->BindAction("Ability3", IE_Released, this, &APSPlayerController::Ability3Released);
+
+	InputComponent->BindAction("Ability4", IE_Pressed, this, &APSPlayerController::Ability4Pressed);
+	InputComponent->BindAction("Ability4", IE_Released, this, &APSPlayerController::Ability4Released);
 
 	InputComponent->BindAxis("MoveForward", this, &APSPlayerController::MoveForward);
 	InputComponent->BindAxis("MoveRight", this, &APSPlayerController::MoveRight);
@@ -72,65 +91,65 @@ void APSPlayerController::OnActionPressed()
 void APSPlayerController::OnActionReleased()
 {
 	UWorld* const World = GetWorld();
-	if (!World)
-	{
-		return;
-	}
-
-	if (SelectedSquads.Num() <= 0)
-	{
-		return;
-	}
+	if (!World) { return; }
+	if (SelectedSquads.Num() <= 0) { return; }
 
 	// Trace to see what is under the mouse cursor
 	FHitResult Hit;
 	GetHitResultUnderCursor(ECC_Visibility, false, Hit);
 
-	if (Hit.bBlockingHit)
+	if (!Hit.bBlockingHit) { return; }
+
+	APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
+	if (PSUnit && !PSUnit->CoveredByFOW && PSUnit->IsAlive())
 	{
-		APSUnit* PSUnit = Cast<APSUnit>(Hit.GetActor());
-		if (PSUnit && !PSUnit->CoveredByFOW)
+		// Hit an unit.
+		FAbilityParams AbilityParams = FAbilityParams();
+		AbilityParams.Actor = PSUnit->Squad;
+		if (UPSStaticLibrary::AreEnemyTeams(PSUnit->Squad->Team, Team))
 		{
-			// Hit an unit.
-			FAbilityParams AbilityParams = FAbilityParams();
-			AbilityParams.Actor = PSUnit->Squad;
-			if (UPSStaticLibrary::AreEnemyTeams(PSUnit->Squad->Team, Team))
-			{
-				// Hit enemy squad.
-				UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
-			}
-			else
-			{
-				// Hit friendly squad (doesn't matter the player owner for now).
-				UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
-			}
+			// Hit enemy squad.
+			UseSelectedSquadsAbility(EAbilityType::ActionEnemyUnit, AbilityParams);
 		}
 		else
 		{
-			// Hit a place where we can try to move.
-			if (SelectedSquads.Num() > 1)
-			{
-				FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
-				Formation->SetActorLocation(Hit.ImpactPoint);
-				Formation->SetActorRotation(FormationRotation);
-				int i = 0;
-				for (APSSquad* Squad : SelectedSquads)
-				{
-					FAbilityParams AbilityParams = FAbilityParams();
-					AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
-					AbilityParams.Rotation = Formation->GetActorRotation();
-					UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
-					i++;
-				}
-			}
-			else
-			{
-				FAbilityParams AbilityParams = FAbilityParams();
-				AbilityParams.Position = Hit.ImpactPoint;
-				UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
-			}
+			// Hit friendly squad (doesn't matter the player owner for now).
+			UseSelectedSquadsAbility(EAbilityType::ActionFriendlyUnit, AbilityParams);
+		}
+		return;
+	}
+
+	APSPowerSphereCrate* PSCrate = Cast<APSPowerSphereCrate>(Hit.GetActor());
+
+	if (PSCrate && !PSCrate->GetIsOpened())
+	{	
+		PSCrate->TryToOpen();
+		ServerTryToOpenPSCrate(PSCrate);
+	}
+
+	// Hit a place where we can try to move.
+	if (SelectedSquads.Num() > 1)
+	{
+		FRotator FormationRotation = (Hit.ImpactPoint - Formation->GetActorLocation()).Rotation();
+		Formation->SetActorLocation(Hit.ImpactPoint);
+		Formation->SetActorRotation(FormationRotation);
+		int i = 0;
+		for (APSSquad* Squad : SelectedSquads)
+		{
+			FAbilityParams AbilityParams = FAbilityParams();
+			AbilityParams.Position = Formation->FormationPositions[i]->GetComponentLocation();
+			AbilityParams.Rotation = Formation->GetActorRotation();
+			UseSingleSquadAbility(Squad, EAbilityType::ActionMoveTo, AbilityParams);
+			i++;
 		}
 	}
+	else
+	{
+		FAbilityParams AbilityParams = FAbilityParams();
+		AbilityParams.Position = Hit.ImpactPoint;
+		UseSelectedSquadsAbility(EAbilityType::ActionMoveTo, AbilityParams);
+	}
+	
 }
 
 void APSPlayerController::OnSelectPressed()
@@ -144,15 +163,7 @@ void APSPlayerController::OnSelectPressed()
 
 void APSPlayerController::OnSelectReleased()
 {
-	if (SelectedSquads.Num() > 0)
-	{
-		for (APSSquad* Squad : SelectedSquads)
-		{
-			Squad->SquadDeselectedClient();
-		}
-
-		SelectedSquads.Empty();
-	}
+	TArray<APSSquad*> NewSelectedSquads;
 
 	TArray<APSUnit*> SelectedUnits;
 	APSHUD* HUD = Cast<APSHUD>(GetHUD());
@@ -165,7 +176,7 @@ void APSPlayerController::OnSelectReleased()
 	{
 		for (APSUnit* Unit : SelectedUnits)
 		{
-			SelectedSquads.AddUnique(Unit->Squad);
+			NewSelectedSquads.AddUnique(Unit->Squad);
 		}
 	}
 	else
@@ -177,11 +188,11 @@ void APSPlayerController::OnSelectReleased()
 		if (Hit.IsValidBlockingHit() && Hit.GetActor())
 		{
 			APSUnit* UnitHit = Cast<APSUnit>(Hit.GetActor());
-			if (UnitHit && UnitHit->Squad)
+			if (UnitHit && UnitHit->Squad && UnitHit->IsAlive())
 			{
 				if (UnitHit->Team == Team && UnitHit->PlayerOwner == this)
 				{
-					SelectedSquads.Add(UnitHit->Squad);
+					NewSelectedSquads.Add(UnitHit->Squad);
 				}
 				else
 				{
@@ -191,11 +202,30 @@ void APSPlayerController::OnSelectReleased()
 		}
 	}
 
+	SelectSquads(NewSelectedSquads);
+}
+
+void APSPlayerController::SelectSquads(const TArray<APSSquad*> Squads)
+{
+	if (SelectedSquads.Num() > 0)
+	{
+		for (APSSquad* Squad : SelectedSquads)
+		{
+			Squad->SquadDeselectedClient();
+			OnSquadDeselected.Broadcast(Squad);
+		}
+
+		SelectedSquads.Empty();
+	}
+
+	SelectedSquads = Squads;
+
 	if (SelectedSquads.Num() > 0)
 	{
 		for (APSSquad* Squad : SelectedSquads)
 		{
 			Squad->SquadSelectedClient();
+			OnSquadSelected.Broadcast(Squad);
 		}
 	}
 
@@ -204,25 +234,62 @@ void APSPlayerController::OnSelectReleased()
 	//	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Red, FString::Printf(TEXT("Selected Squad: %s"), *Squad->GetHumanReadableName()));
 	//}
 
-	SelectSquads(SelectedSquads);
+	ServerSelectSquads(SelectedSquads);
 }
 
-void APSPlayerController::OnUnitAbilityPressed()
+void APSPlayerController::Ability1Pressed()
+{
+	UseAbility(EAbilityType::Ability1);
+}
+
+void APSPlayerController::Ability1Released()
 {
 
 }
 
-void APSPlayerController::OnUnitAbilityReleased()
+void APSPlayerController::Ability2Pressed()
+{
+	UseAbility(EAbilityType::Ability2);
+}
+
+void APSPlayerController::Ability2Released()
 {
 
 }
 
-void APSPlayerController::SelectSquads_Implementation(const TArray<APSSquad*>& Squads)
+void APSPlayerController::Ability3Pressed()
+{
+	UseAbility(EAbilityType::Ability3);
+}
+
+void APSPlayerController::Ability3Released()
+{
+
+}
+
+void APSPlayerController::Ability4Pressed()
+{
+	UseAbility(EAbilityType::Ability4);
+}
+
+void APSPlayerController::Ability4Released()
+{
+
+}
+
+void APSPlayerController::UseAbility(EAbilityType AbilityType)
+{
+	FAbilityParams AbilityParams = FAbilityParams();
+
+	UseSelectedSquadsAbility(AbilityType, AbilityParams);
+}
+
+void APSPlayerController::ServerSelectSquads_Implementation(const TArray<APSSquad*>& Squads)
 {
 	SelectedSquads = Squads;
 }
 
-bool APSPlayerController::SelectSquads_Validate(const TArray<APSSquad*>& Squads)
+bool APSPlayerController::ServerSelectSquads_Validate(const TArray<APSSquad*>& Squads)
 {
 	return true;
 }
@@ -249,6 +316,17 @@ void APSPlayerController::UseSingleSquadAbility_Implementation(APSSquad* Squad, 
 }
 
 bool APSPlayerController::UseSingleSquadAbility_Validate(APSSquad* Squad, EAbilityType AbilityType, FAbilityParams AbilityParams)
+{
+	return true;
+}
+
+void APSPlayerController::ServerTryToOpenPSCrate_Implementation(class APSPowerSphereCrate* PSCrate)
+{
+	if (!PSCrate) { return; }
+	PSCrate->TryToOpen();
+}
+
+bool APSPlayerController::ServerTryToOpenPSCrate_Validate(class APSPowerSphereCrate* PSCrate)
 {
 	return true;
 }

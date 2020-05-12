@@ -94,6 +94,10 @@ struct POWERSPHERES_API FPSSkeletalMeshMergeParams
 	// Leave empty if the generated skeleton is OK.
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	class USkeleton* Skeleton;
+
+	// Physics asset that will be used for the merged mesh.
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	class UPhysicsAsset* PhysicsAsset;
 };
 
 /**

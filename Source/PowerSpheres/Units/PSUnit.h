@@ -59,8 +59,20 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);
 
+	UFUNCTION(BlueprintCallable)
+	void CancelCurrentAbility();
+
 	UFUNCTION()
 	void Die(APSUnit* Attacker);
+
+	UFUNCTION(NetMulticast, Reliable)
+	void DieMulticast(APSUnit* Attacker);
+
+	UFUNCTION(BlueprintImplementableEvent)
+	void UnitDiedEvent(APSUnit* Attacker);
+
+	UFUNCTION()
+	void UnitDamaged(APSUnit* Attacker, FGameplayCueParameters Params);
 
 	UFUNCTION()
 	void TargetDied(APSUnit* Target);
@@ -85,7 +97,7 @@ public:
 	UFUNCTION(BlueprintImplementableEvent)
 	void UnitEnteredFOW();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintPure)
 	bool IsAlive();
 
 	UFUNCTION(BlueprintCallable)
@@ -156,11 +168,11 @@ private:
 	class UMapIconComponent* MapIcon;
 
 	/** Our ability system */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"), Replicated)
 	class UAbilitySystemComponent* AbilitySystem;
 
 	/** Our attribute set */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"))
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Abilities, meta = (AllowPrivateAccess = "true"), Replicated)
 	const class UAttributeSet* AttributeSet;
 
 	// Indicates whether the last time UseAbility was called was because user input or not.

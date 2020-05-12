@@ -46,6 +46,7 @@ private:
 	ETeamType CurrentTeam;
 #endif
 	void AssignPlayerTeam(AController* Controller);
+
 	void SpawnPlayerArmy(AController* Controller);
 
 	APSPowerSphereCrateSpawnerManager* PowerSphereCrateSpawnerManager;
