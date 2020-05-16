@@ -54,7 +54,7 @@ public:
 	UFUNCTION(Client, Unreliable)
 	void UnitDeselectedClient();
 
-	void GivePowers(TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres);
+	void GivePowers(TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres);
 
 	UFUNCTION(BlueprintCallable)
 	void UseAbility(EAbilityType AbilityType, bool bIsUserInput);

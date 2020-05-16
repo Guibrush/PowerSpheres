@@ -54,7 +54,7 @@ public:
 	void SquadDamagedEvent(APSUnit* Unit, APSUnit* Attacker, FGameplayCueParameters Params);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipSphere(TSubclassOf<class UPSPowerSphere> NewSphere);
+	void EquipSphere(TSubclassOf<class UPSPowerSphereData> NewSphere);
 
 	/** Gets all the units in this squad in a single array. */
 	UFUNCTION(BlueprintPure)
@@ -103,7 +103,7 @@ private:
 
 	TArray<FVector> ValidUnitsDirection;
 
-	APSUnit* SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphere>> PowerSpheres);
+	APSUnit* SpawnUnit(FTransform UnitTransform, TArray<TSubclassOf<class UPSPowerSphereData>> PowerSpheres);
 
 	void ConstructAbilities();
 
